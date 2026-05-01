@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mariadb-greathumancorp": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${workspaceFolder}/tools/mariadb-mcp-server/mcp",
+        "run",
+        "src/server.py"
+      ],
+      "envFile": "${workspaceFolder}/tools/mariadb-mcp-server/mariadb-mcp.env"
+    }
+  }
+}
