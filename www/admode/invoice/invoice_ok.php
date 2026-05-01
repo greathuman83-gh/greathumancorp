@@ -3,12 +3,15 @@ $ghPath = '../../';
 include_once($ghPath . 'include/common/common.php');
 include_once($ghPath . 'include/common/permission.php');
 include_once($ghPath . 'include/common/db.class.php');
+include_once($ghPath . 'include/plugin/invoice_parser/InvoiceParser.php');
 
 
 $DB = new DBManager($conn);
+$invoiceParser = new InvoiceParser();
 
 $tableName = 'gh_invoice_table';
 $uploadDirectory = 'invoice';
+$uploadedPdfPath = null;
 
 if ($delete_file1 ??= null) {
 	@unlink($ghPath . "data/$uploadDirectory/$old_file1");
@@ -25,12 +28,12 @@ if ($_FILES['file1'] ??= null) {
 		$inputs['file1'] = $mfile['filename'];
 		$inputs['file1_name'] = $mfile['originalFileName'];
 
-		//$resizeData = image_resize($ghPath.'data/board/$bbsid/',$mfile['filename'],397,235,$mfile['img_type'],1,95);
+		$ext = strtolower(pathinfo($mfile['originalFileName'], PATHINFO_EXTENSION));
+		if ($ext === 'pdf') {
+			$uploadedPdfPath = $ghPath . "data/$uploadDirectory/" . $mfile['filename'];
+		}
 	}
 }
-
-
-
 
 
 $inputs['title'] = $title ?? null;
@@ -51,6 +54,17 @@ if ($w == 'a') {
 	if (!$DB->insertInto($tableName, $inputs)) {
 		$funcLibrary->alert('문제가 발생하였습니다.');
 	} else {
+		$newIdx = (int)$conn->lastInsertId();
+
+		if ($uploadedPdfPath && file_exists($uploadedPdfPath)) {
+			try {
+				$parsedData = $invoiceParser->parse(realpath($uploadedPdfPath));
+				$invoiceParser->saveToDb($conn, $newIdx, $parsedData);
+			} catch (\Exception $e) {
+				// 파싱 실패해도 계산서 등록은 유지
+			}
+		}
+
 		$funcLibrary->alert('등록되었습니다.', './invoice_list.php?' . $funcLibrary->queryString('idx,w'));
 	}
 } else if ($w == 'u') {
@@ -59,10 +73,22 @@ if ($w == 'a') {
 	if (!$DB->updateSet($tableName, $inputs, $where)) {
 		$funcLibrary->alert('문제가 발생하였습니다.');
 	} else {
+		if ($uploadedPdfPath && file_exists($uploadedPdfPath)) {
+			try {
+				$invoiceParser->deleteByInvoiceIdx($conn, (int)$idx);
+				$parsedData = $invoiceParser->parse(realpath($uploadedPdfPath));
+				$invoiceParser->saveToDb($conn, (int)$idx, $parsedData);
+			} catch (\Exception $e) {
+				// 파싱 실패해도 계산서 수정은 유지
+			}
+		}
+
 		$funcLibrary->alert('수정되었습니다.', './invoice_form.php?' . $funcLibrary->queryString());
 	}
 } else if ($w == 'd') {
 	$d = $queryLibrary->getData($idx, $tableName);
+
+	$invoiceParser->deleteByInvoiceIdx($conn, (int)$idx);
 
 	$where[] = array('idx', $idx);
 	if (!$DB->delete_db($tableName, $where)) {
