@@ -282,6 +282,68 @@ INSERT INTO `gh_invoice_table` (`idx`, `num`, `category`, `title`, `content`, `i
 -- --------------------------------------------------------
 
 --
+-- 테이블 구조 `gh_invoice_detail_table`
+--
+
+CREATE TABLE `gh_invoice_detail_table` (
+  `idx` int(20) NOT NULL COMMENT '고유값',
+  `invoice_idx` int(20) NOT NULL COMMENT '계산서 고유값(gh_invoice_table.idx)',
+  `approval_no` varchar(50) DEFAULT NULL COMMENT '승인번호',
+  `supplier_biz_no` varchar(20) DEFAULT NULL COMMENT '공급자 사업자등록번호',
+  `supplier_corp_no` varchar(20) DEFAULT NULL COMMENT '공급자 종사업장번호',
+  `supplier_company` varchar(100) DEFAULT NULL COMMENT '공급자 상호(법인명)',
+  `supplier_name` varchar(50) DEFAULT NULL COMMENT '공급자 성명',
+  `supplier_address` varchar(300) DEFAULT NULL COMMENT '공급자 사업장 주소',
+  `supplier_biz_type` varchar(100) DEFAULT NULL COMMENT '공급자 업태',
+  `supplier_biz_item` varchar(100) DEFAULT NULL COMMENT '공급자 종목',
+  `supplier_email` varchar(100) DEFAULT NULL COMMENT '공급자 이메일',
+  `receiver_biz_no` varchar(20) DEFAULT NULL COMMENT '공급받는자 사업자등록번호',
+  `receiver_corp_no` varchar(20) DEFAULT NULL COMMENT '공급받는자 종사업장번호',
+  `receiver_company` varchar(100) DEFAULT NULL COMMENT '공급받는자 상호(법인명)',
+  `receiver_name` varchar(50) DEFAULT NULL COMMENT '공급받는자 성명',
+  `receiver_address` varchar(300) DEFAULT NULL COMMENT '공급받는자 사업장 주소',
+  `receiver_biz_type` varchar(100) DEFAULT NULL COMMENT '공급받는자 업태',
+  `receiver_biz_item` varchar(100) DEFAULT NULL COMMENT '공급받는자 종목',
+  `receiver_email` varchar(100) DEFAULT NULL COMMENT '공급받는자 이메일',
+  `receiver_email2` varchar(100) DEFAULT NULL COMMENT '공급받는자 이메일2',
+  `issue_date` varchar(10) DEFAULT NULL COMMENT '작성일자',
+  `supply_amount` bigint(20) DEFAULT 0 COMMENT '공급가액 합계',
+  `tax_amount` bigint(20) DEFAULT 0 COMMENT '세액 합계',
+  `total_amount` bigint(20) DEFAULT 0 COMMENT '합계금액',
+  `modify_reason` varchar(200) DEFAULT NULL COMMENT '수정사유',
+  `cash_amount` bigint(20) DEFAULT 0 COMMENT '현금',
+  `check_amount` bigint(20) DEFAULT 0 COMMENT '수표',
+  `note_amount` bigint(20) DEFAULT 0 COMMENT '어음',
+  `credit_amount` bigint(20) DEFAULT 0 COMMENT '외상미수금',
+  `claim_type` varchar(10) DEFAULT NULL COMMENT '청구/영수',
+  `parsed_json` longtext DEFAULT NULL COMMENT '원본 파싱 JSON',
+  `regdate` datetime NOT NULL COMMENT '등록일'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='전자세금계산서 상세';
+
+-- --------------------------------------------------------
+
+--
+-- 테이블 구조 `gh_invoice_item_table`
+--
+
+CREATE TABLE `gh_invoice_item_table` (
+  `idx` int(20) NOT NULL COMMENT '고유값',
+  `detail_idx` int(20) NOT NULL COMMENT '계산서상세 고유값(gh_invoice_detail_table.idx)',
+  `item_month` varchar(2) DEFAULT NULL COMMENT '월',
+  `item_day` varchar(2) DEFAULT NULL COMMENT '일',
+  `item_name` varchar(200) DEFAULT NULL COMMENT '품목',
+  `item_spec` varchar(100) DEFAULT NULL COMMENT '규격',
+  `item_qty` decimal(15,2) DEFAULT NULL COMMENT '수량',
+  `item_unit_price` bigint(20) DEFAULT 0 COMMENT '단가',
+  `item_supply_amount` bigint(20) DEFAULT 0 COMMENT '공급가액',
+  `item_tax_amount` bigint(20) DEFAULT 0 COMMENT '세액',
+  `item_remark` varchar(200) DEFAULT NULL COMMENT '비고',
+  `regdate` datetime NOT NULL COMMENT '등록일'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='전자세금계산서 품목';
+
+-- --------------------------------------------------------
+
+--
 -- 테이블 구조 `gh_main_table`
 --
 
@@ -477,6 +539,21 @@ ALTER TABLE `gh_inquiry_table`
   ADD KEY `index` (`idx`,`r_name`,`regdate`) USING BTREE;
 
 --
+-- 테이블의 인덱스 `gh_invoice_detail_table`
+--
+ALTER TABLE `gh_invoice_detail_table`
+  ADD PRIMARY KEY (`idx`),
+  ADD KEY `invoice_idx` (`invoice_idx`),
+  ADD KEY `index_date` (`issue_date`);
+
+--
+-- 테이블의 인덱스 `gh_invoice_item_table`
+--
+ALTER TABLE `gh_invoice_item_table`
+  ADD PRIMARY KEY (`idx`),
+  ADD KEY `detail_idx` (`detail_idx`);
+
+--
 -- 테이블의 인덱스 `gh_invoice_table`
 --
 ALTER TABLE `gh_invoice_table`
@@ -558,6 +635,18 @@ ALTER TABLE `gh_inquiry_table`
   MODIFY `idx` int(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- 테이블의 AUTO_INCREMENT `gh_invoice_detail_table`
+--
+ALTER TABLE `gh_invoice_detail_table`
+  MODIFY `idx` int(20) NOT NULL AUTO_INCREMENT COMMENT '고유값';
+
+--
+-- 테이블의 AUTO_INCREMENT `gh_invoice_item_table`
+--
+ALTER TABLE `gh_invoice_item_table`
+  MODIFY `idx` int(20) NOT NULL AUTO_INCREMENT COMMENT '고유값';
+
+--
 -- 테이블의 AUTO_INCREMENT `gh_invoice_table`
 --
 ALTER TABLE `gh_invoice_table`
@@ -592,6 +681,15 @@ ALTER TABLE `gh_seo_table`
 --
 ALTER TABLE `gh_worker_table`
   MODIFY `idx` int(20) NOT NULL AUTO_INCREMENT COMMENT '고유값', AUTO_INCREMENT=3;
+--
+-- 외래 키 제약조건
+--
+ALTER TABLE `gh_invoice_detail_table`
+  ADD CONSTRAINT `fk_invoice_detail` FOREIGN KEY (`invoice_idx`) REFERENCES `gh_invoice_table` (`idx`) ON DELETE CASCADE;
+
+ALTER TABLE `gh_invoice_item_table`
+  ADD CONSTRAINT `fk_invoice_item` FOREIGN KEY (`detail_idx`) REFERENCES `gh_invoice_detail_table` (`idx`) ON DELETE CASCADE;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
