@@ -363,6 +363,8 @@ a:hover {
   width: 456px;
   height: 57px;
   line-height: 57px;
+  border: 0;
+  padding: 0;
   background: #2e2e2e;
   color: #ffffff;
   margin-top: 12px;
@@ -387,6 +389,9 @@ body:has(#header) .copyright {
 }
 .copyright img {
   display: block;
+  width: 80px;
+  height: auto;
+  flex-shrink: 0;
 }
 .copyright span {
   display: block;

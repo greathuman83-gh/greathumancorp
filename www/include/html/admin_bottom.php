@@ -3,7 +3,7 @@
 		</div><!--//wrap -->
 		<div style="clear:both;"></div>
 		<div class="copyright" style="margin-bottom:30px;">
-			<img src="/images/admin/login/admin_logo.png"> &nbsp;&nbsp;<span style="color:#b5b5b5">Copyright © Designpixel Corp. All Rights Reserved.</span>
+			<img src="/images/admin/login/admin_logo.png" width="80" alt=""><span style="color:#b5b5b5">Copyright © Designpixel Corp. All Rights Reserved.</span>
 		</div>
 		</body>
 
