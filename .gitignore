@@ -1,0 +1,4 @@
+sftp.json
+
+# 서버 전용 ACME/인증 등 — 로컬·배포 동기화 대상 아님
+www/.well-known/

@@ -1,0 +1,7 @@
+{
+  // 필수로 설치해야 할 확장 프로그램 목록
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "bmewburn.vscode-intelephense-client"
+  ]
+}

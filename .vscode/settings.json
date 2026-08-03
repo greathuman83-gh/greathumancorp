@@ -1,0 +1,18 @@
+{
+  // 저장 시 자동으로 포맷팅 켬
+  "editor.formatOnSave": true,
+  // 붙여넣기 할 때도 자동으로 포맷팅 켬 (선택 사항임)
+  "editor.formatOnPaste": true,
+
+  // 기본 포맷터는 Prettier로 지정함 (JS, CSS, HTML에 적용됨)
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // PHP 파일에 대한 전용 설정임
+  "[php]": {
+    // PHP는 Intelephense를 기본 포맷터로 사용함
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+
+  // Prettier가 간혹 PHP를 건드리지 않도록 무시 목록에 추가함
+  "prettier.ignorePath": ".prettierignore"
+}

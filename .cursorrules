@@ -1,0 +1,8 @@
+# Note
+세부 규칙은 `.cursor/rules/*.mdc` 파일로 분리되어 적용된다.
+
+- 공통: `core-project-rules.mdc`
+- 네이밍 컨벤션: `naming-convention-rules.mdc`
+- board 스킨 전용: `board-skin-output-rules.mdc`
+- include/common 전용: `common-library-rules.mdc`
+- admode 전용: `admode-admin-rules.mdc`

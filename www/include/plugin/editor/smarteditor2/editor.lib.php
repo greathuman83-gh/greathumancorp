@@ -1,0 +1,147 @@
+<?php
+if (!defined('_GHBOARD_')) exit; // 개별 페이지 접근 불가
+
+function editor_html($id, $content, $is_dhtml_editor=true)
+{
+    global $g5, $config;
+    static $js = true;
+
+    $editor_url = GH_URL."/include/plugin/editor/smarteditor2";
+
+    $html = "";
+    if ($is_dhtml_editor)
+        //$html .= '<script>document.write("<div class=\'cke_sc\'><button type=\'button\' class=\'btn_cke_sc\'>단축키 일람</button></div>");</script>';
+
+    if ($is_dhtml_editor && $js) {
+        $html .= "\n".'<script src="'.$editor_url.'/js/HuskyEZCreator.js"></script>';
+        $html .= "\n".'<script>var g5_editor_url = "'.$editor_url.'", oEditors = [], ed_nonce = "'.ft_nonce_create('smarteditor').'";</script>';
+
+		if(preg_match('/iPhone|iPod|iPad|Android|android|dream|Windows Phone|mobile|Opera Mini|Windows CE|blackberry|webOS|incognito|webmate|s8000|bada|SKT|LGTelecom/',$_SERVER['HTTP_USER_AGENT'])){
+			$html .= "\n".'<script src="'.$editor_url.'/config_mobile.js"></script>';
+
+		}else{
+			$html .= "\n".'<script src="'.$editor_url.'/config.js"></script>';
+		}
+
+
+        $html .= "\n<script>";
+        $html .= '
+        document.addEventListener("DOMContentLoaded", function(){
+            document.querySelectorAll(".btn_cke_sc").forEach(function(btn){
+                btn.addEventListener("click", function(){
+                    var next = this.nextElementSibling;
+                    if (next && next.classList.contains("cke_sc_def")) {
+                        next.remove();
+                        this.textContent = "단축키 일람";
+                    } else {
+                        var def = document.createElement("div");
+                        def.className = "cke_sc_def";
+                        this.insertAdjacentElement("afterend", def);
+                        fetch("'.$editor_url.'/shortcut.html").then(function(r){ return r.text(); }).then(function(html){ def.innerHTML = html; });
+                        this.textContent = "단축키 일람 닫기";
+                    }
+                });
+            });
+            document.addEventListener("click", function(e){
+                var closeBtn = e.target.closest(".btn_cke_sc_close");
+                if (!closeBtn) return;
+                var parent = closeBtn.closest("div.cke_sc_def");
+                if (parent) parent.remove();
+            });
+        });';
+        $html .= "\n</script>";
+        $js = false;
+    }
+
+    $smarteditor_class = $is_dhtml_editor ? "smarteditor2" : "";
+    $html .= "\n<textarea id=\"$id\" name=\"$id\" class=\"$smarteditor_class\" maxlength=\"65536\" style=\"width:100%;height:600px\">$content</textarea>";
+    return $html;
+}
+
+
+// textarea 로 값을 넘긴다. javascript 반드시 필요
+function get_editor_js($id, $is_dhtml_editor=true)
+{
+    if ($is_dhtml_editor) {
+        return "var {$id}_editor_data = oEditors.getById['{$id}'].getIR();\noEditors.getById['{$id}'].exec('UPDATE_CONTENTS_FIELD', []);\nif(['&nbsp;','<p>&nbsp;</p>','<p><br></p>','<div><br></div>','<p></p>','<br>',''].indexOf(document.getElementById('{$id}').value.toLowerCase().replace(/^\\s*|\\s*$/g, '')) != -1){document.getElementById('{$id}').value='';}\n";
+    } else {
+        return "var {$id}_editor = document.getElementById('{$id}');\n";
+    }
+}
+
+
+//  textarea 의 값이 비어 있는지 검사
+function chk_editor_js($id, $is_dhtml_editor=true)
+{
+    if ($is_dhtml_editor) {
+        return "if (!{$id}_editor_data || ['&nbsp;','<p>&nbsp;</p>','<p><br></p>','<p></p>','<br>'].indexOf({$id}_editor_data.toLowerCase()) != -1) { alert(\"내용을 입력해 주십시오.\"); oEditors.getById['{$id}'].exec('FOCUS'); return false; }\n";
+    } else {
+        return "if (!{$id}_editor.value) { alert(\"내용을 입력해 주십시오.\"); {$id}_editor.focus(); return false; }\n";
+    }
+}
+
+/*
+ * Name: FT-NONCE-LIB
+ * Created By: Full Throttle Development, LLC (http://fullthrottledevelopment.com)
+ * Created On: July 2009
+ * Last Modified On: August 12, 2009
+ * Last Modified By: Glenn Ansley (glenn@fullthrottledevelopment.com)
+ * Version: 0.2
+ */
+
+/* 
+Copyright 2009 Full Throttle Development, LLC
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+if (!defined('FT_NONCE_DURATION'))
+    define( 'FT_NONCE_DURATION' , 2160000 ); // 300 makes link or form good for 5 minutes from time of generation,  300은 5분간 유효, 2160000은 10시간동안 유효
+
+if (!defined('FT_NONCE_KEY'))
+    define( 'FT_NONCE_KEY' , '_nonce' );
+
+// This method creates a key / value pair for a url string
+if(!function_exists('ft_nonce_create_query_string')){
+    function ft_nonce_create_query_string( $action = '' , $user = '' ){
+        return FT_NONCE_KEY."=".ft_nonce_create( $action , $user );
+    }
+}
+
+// This method creates an nonce. It should be called by one of the previous two functions.
+if(!function_exists('ft_nonce_create')){
+    function ft_nonce_create( $action = '' , $user='' ){
+        return substr( ft_nonce_generate_hash( $action . $user ), -12, 10);
+    }
+}
+
+// This method validates an nonce
+if(!function_exists('ft_nonce_is_valid')){
+    function ft_nonce_is_valid( $nonce , $action = '' , $user='' ){
+        // Nonce generated 0-12 hours ago
+        if ( substr(ft_nonce_generate_hash( $action . $user ), -12, 10) == $nonce ){
+            return true;
+        }
+        return false;
+    }
+}
+
+// This method generates the nonce timestamp
+if(!function_exists('ft_nonce_generate_hash')){
+    function ft_nonce_generate_hash( $action='' , $user='' ){
+        $i = ceil( time() / ( FT_NONCE_DURATION / 2 ) );
+        return md5( $i . $action . $user . $action );
+    }
+}
+?>
