@@ -141,27 +141,28 @@ a:hover {
   width: 100%;
   min-width: 1200px;
   height: 73px;
-  line-height: 73px;
   border-bottom: 1px solid #404040;
   background: url(../../images/admin/main/admin_header_bg.gif) repeat;
 }
 .mobile-gnb-toggle {
   display: none;
 }
+#header .head ul {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
 #header .head ul li {
-  display: inline-block;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
 }
 #header .head ul li img {
   vertical-align: middle;
 }
 #header .head ul li:first-child {
   padding-left: 25px;
-  width: 47%;
-  display: inline-flex;
-  align-items: center;
   gap: 12px;
-  line-height: normal;
 }
 #header .head ul li:first-child div {
   color: #cccccc;
@@ -171,15 +172,14 @@ a:hover {
   line-height: 1.2;
 }
 #header .head ul li:nth-child(2) {
-  float: right;
   text-align: right;
-  width: 47.5%;
 }
 #header .head ul li:nth-child(2) div {
   display: inline-block;
   width: 100px;
   height: 55px;
   padding-top: 18px;
+  box-sizing: border-box;
   border-left: 1px solid #454545;
   text-align: center;
   line-height: 20px;
