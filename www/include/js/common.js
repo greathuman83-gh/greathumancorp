@@ -514,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var contents = document.getElementById("contents");
     var listTables = [];
     if (contents) {
-      contents.querySelectorAll(".contents > table.admin-menu-table").forEach(function (table) {
+      contents.querySelectorAll(".contents > table.admin-menu-table, .contents > table.adminMenuTable").forEach(function (table) {
         if (table.querySelector("tr.bgcol1, tr.bold.col1")) {
           listTables.push(table);
         }

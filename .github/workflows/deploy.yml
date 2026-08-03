@@ -37,7 +37,7 @@ jobs:
 
           # 카페24 등 — 로컬 접속과 동일하게 FTP(패시브) 사용
           # 로컬 www/ → 원격 /www/
-          # data/, .well-known/ 은 동기화·삭제 제외
+          # data/, .well-known/, DBConnect/ 은 동기화·삭제 제외
           lftp <<EOF
           set cmd:fail-exit yes
           set ftp:passive-mode true
@@ -46,6 +46,6 @@ jobs:
           set net:max-retries 2
           set net:reconnect-interval-base 5
           open -u "${SERVER_USERNAME}","${SERVER_PASSWORD}" -p ${SERVER_PORT} ftp://${SERVER_HOST}
-          mirror -R --delete --verbose --exclude-glob data/** --exclude-glob .well-known/** ./www/ /www/
+          mirror -R --delete --verbose --exclude-glob data/** --exclude-glob .well-known/** --exclude-glob DBConnect/** ./www/ /www/
           bye
           EOF

@@ -40,7 +40,7 @@ define('_GHBOARD_', true);
 define('GH_PATH', $root_path);
 define('GH_URL', HOMEPAGE_URL);
 define('GH_DIR_PERMISSION', 0707);
-define('ADMIN_VERSION', 'V3.1'); //관리자 페이지 버전
+define('ADMIN_VERSION', 'V3.1.1'); //관리자 페이지 버전
 define('LANGUAGE', $_SESSION['language']);
 define('DEVICE', $func_library->deviceCheck());
 
@@ -218,6 +218,13 @@ $_publicationCategory = array( //Publication 구분
 $_publicationCategoryEn = array( //Publication 구분(영문)
 	'001' => 'Journal',
 	'002' => 'Conference',
+);
+
+// 직원 고용형태 — worker_list/form w_type 매핑
+$_workerType = array(
+	1 => '정규직',
+	2 => '계약직',
+	3 => '프리랜서',
 );
 
 /*================= SMTP 세팅 =============================*/

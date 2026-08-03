@@ -152,6 +152,8 @@ $_admin_level = array(
 	10 => '슈퍼관리자',
 	2 => '서브관리자',
 );
+// manager_list/form — 기존 $_adminLevel 참조 호환
+$_adminLevel = $_admin_level;
 
 $_memberLevel = array(
 	1 => '일반회원',

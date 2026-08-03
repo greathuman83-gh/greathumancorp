@@ -28,9 +28,9 @@ $size_detail = '첨부파일';
 				<select name="w_type" class="input_select">
 					<?php
 					foreach ($_workerType as $key => $value) {
-						$selected = $d['w_type'] == $key ? 'selected' : '';
+						$selected = (string)($d['w_type'] ?? '') === (string)$key ? 'selected' : '';
 					?>
-						<option value="<?= $key ?>" <?= $selected ?>><?= $value ?></option>
+						<option value="<?= gh_h((string)$key) ?>" <?= $selected ?>><?= gh_h($value) ?></option>
 					<?php } ?>
 				</select>
 			</td>

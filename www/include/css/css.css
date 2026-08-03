@@ -437,14 +437,16 @@ body:has(#header) .copyright {
   color: #6d6e71;
 }
 
-/* 인풋박스 */
-.input-text {
+/* 인풋박스 — PHP 레거시(snake_case) class 병행 */
+.input-text,
+.input_text {
   border: 1px solid #cccccc;
   vertical-align: middle;
   padding: 6px;
   height: auto !important;
 }
-.input-select {
+.input-select,
+.input_select {
   border: 1px solid #cccccc;
   vertical-align: middle;
   padding: 5px;
@@ -476,7 +478,8 @@ select.input-select:has(option.pay-stat-opt.pay-stat-4:checked) {
   color: #757575;
 }
 
-.input-text1 {
+.input-text1,
+.input_text1 {
   height: 30px;
   line-height: 30px;
   border: 1px solid #cccccc;
@@ -488,7 +491,8 @@ select.input-select:has(option.pay-stat-opt.pay-stat-4:checked) {
   border: 1px solid #cccccc;
   vertical-align: middle;
 }
-.input-textarea {
+.input-textarea,
+.input_textarea {
   border: 1px solid #cccccc;
   vertical-align: middle;
   padding: 6px;
@@ -514,8 +518,9 @@ select.input-select:has(option.pay-stat-opt.pay-stat-4:checked) {
   color: #555555;
 }
 
-/* 테이블 */
-.admin-menu-table {
+/* 테이블 — PHP adminMenuTable 병행 */
+.admin-menu-table,
+.adminMenuTable {
   width: 100%;
   min-width: 1100px;
 }
@@ -597,7 +602,8 @@ button {
   cursor: pointer;
   vertical-align: middle;
 }
-.search-btn {
+.search-btn,
+.search_btn {
   border: 0px;
   padding: 7px 15px 7px 15px;
   background: #303030;
@@ -629,7 +635,8 @@ button {
   background: #939393;
   vertical-align: top;
 }
-.gray2-icon-btn {
+.gray2-icon-btn,
+.gray2_icon_btn {
   padding: 5px 7px 5px 7px;
   border: 0;
   color: #fff;
@@ -641,73 +648,85 @@ button {
   background: #f0f0f0;
   color: #ababab;
 }
-.red-btn {
+.red-btn,
+.red_btn {
   border: 0px;
   padding: 7px 30px 7px 30px;
   background: #d31f20;
   color: #ffffff;
 }
-.red-icon-btn {
+.red-icon-btn,
+.red_icon_btn {
   padding: 5px 7px 5px 7px;
   border: 0px;
   color: #fff;
   background: #d31f20;
 }
-.orange-icon-btn {
+.orange-icon-btn,
+.orange_icon_btn {
   padding: 5px 7px 5px 7px;
   border: 0px;
   color: #fff;
   background: #ff6600;
 }
-.gray-btn {
+.gray-btn,
+.gray_btn {
   border: 0px;
   padding: 7px 15px 7px 15px;
   background: #9a9a9a;
   color: #ffffff;
 }
-.green-btn {
+.green-btn,
+.green_btn {
   border: 0px;
   padding: 7px 30px 7px 30px;
   background: #44bb79;
   color: #ffffff;
 }
-.green-icon-btn {
+.green-icon-btn,
+.green_icon_btn {
   border: 0px;
   padding: 5px 7px 5px 7px;
   background: #44bb79;
   color: #ffffff;
 }
-.black-icon-btn {
+.black-icon-btn,
+.black_icon_btn {
   border: 0px;
   padding: 5px 7px 5px 7px;
   background: #303030;
   color: #ffffff;
 }
-.black-btn {
+.black-btn,
+.black_btn {
   border: 0px;
   padding: 7px 30px 7px 30px;
   background: #303030;
   color: #ffffff;
 }
-.blue-btn {
+.blue-btn,
+.blue_btn {
   border: 0px;
   padding: 7px 30px 7px 30px;
   background: #418ed9;
   color: #ffffff;
 }
-.blue-icon-btn {
+.blue-icon-btn,
+.blue_icon_btn {
   border: 0px;
   padding: 5px 7px 5px 7px;
   background: #418ed9;
   color: #ffffff;
 }
-.gray-icon-btn {
+.gray-icon-btn,
+.gray_icon_btn {
   padding: 5px 7px 5px 7px;
   border: 0;
   color: #fff;
   background: #9a9a9a;
 }
-.white-icon-btn {
+.white-icon-btn,
+.white_icon_btn {
   padding: 5px 7px 5px 7px;
   border: 1px solid #000;
   color: #000;
@@ -731,26 +750,30 @@ button {
   border: 0px;
   vertical-align: middle;
 }
-.depth1-icon-btn {
+.depth1-icon-btn,
+.depth1_icon_btn {
   border: 0px;
   padding: 5px 5px 5px 5px;
   background: #d01a1a;
   color: #ffffff;
 }
-.depth2-icon-btn {
+.depth2-icon-btn,
+.depth2_icon_btn {
   border: 0px;
   padding: 5px 5px 5px 5px;
   background: #1851c5;
   color: #ffffff;
 }
-.depth3-icon-btn {
+.depth3-icon-btn,
+.depth3_icon_btn {
   border: 0px;
   padding: 5px 5px 5px 5px;
   background: #3eaf3a;
   color: #ffffff;
 }
 
-.more-icon-btn {
+.more-icon-btn,
+.more_icon_btn {
   border: 0px;
   width: 22px;
   padding: 5px 0px 5px 0px;
@@ -1485,7 +1508,8 @@ span.file {
   border-bottom: 1px solid #dddddd;
   padding-bottom: 10px;
 }
-.content-delete {
+.content-delete,
+.contentDelete {
   display: inline-block;
 }
 
@@ -1764,7 +1788,8 @@ span.file {
     width: 100% !important;
     table-layout: auto;
   }
-  .admin-menu-table {
+  .admin-menu-table,
+  .adminMenuTable {
     min-width: 0;
     table-layout: auto;
   }
@@ -1779,10 +1804,14 @@ span.file {
     max-width: 100% !important;
   }
   .input-text,
+  .input_text,
   .input-select,
+  .input_select,
   .input-text1,
+  .input_text1,
   .input_select1,
-  .input-textarea {
+  .input-textarea,
+  .input_textarea {
     max-width: 100% !important;
   }
   #contents .contents form[name="fwrite"] table {
@@ -1858,7 +1887,8 @@ span.file {
     width: auto !important;
     max-width: none !important;
   }
-  #contents .contents > table.admin-menu-table {
+  #contents .contents > table.admin-menu-table,
+  #contents .contents > table.adminMenuTable {
     display: block;
     width: 100% !important;
     max-width: 100%;
@@ -1866,13 +1896,16 @@ span.file {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
   }
-  #contents .contents > table.admin-menu-table tbody {
+  #contents .contents > table.admin-menu-table tbody,
+  #contents .contents > table.adminMenuTable tbody {
     display: table;
     width: max-content;
     min-width: 100%;
   }
   #contents .contents > table.admin-menu-table th,
-  #contents .contents > table.admin-menu-table td {
+  #contents .contents > table.admin-menu-table td,
+  #contents .contents > table.adminMenuTable th,
+  #contents .contents > table.adminMenuTable td {
     white-space: nowrap;
   }
   #contents .contents > table.admin-menu-table input[type="text"],
@@ -1880,10 +1913,17 @@ span.file {
   #contents .contents > table.admin-menu-table input[type="number"],
   #contents .contents > table.admin-menu-table input[type="email"],
   #contents .contents > table.admin-menu-table input[type="tel"],
-  #contents .contents > table.admin-menu-table select {
+  #contents .contents > table.admin-menu-table select,
+  #contents .contents > table.adminMenuTable input[type="text"],
+  #contents .contents > table.adminMenuTable input[type="password"],
+  #contents .contents > table.adminMenuTable input[type="number"],
+  #contents .contents > table.adminMenuTable input[type="email"],
+  #contents .contents > table.adminMenuTable input[type="tel"],
+  #contents .contents > table.adminMenuTable select {
     min-width: 120px;
   }
-  #contents .contents > table.admin-menu-table textarea {
+  #contents .contents > table.admin-menu-table textarea,
+  #contents .contents > table.adminMenuTable textarea {
     min-width: 220px;
   }
   #contents .contents .mobile-card-source-hidden {
@@ -1919,8 +1959,11 @@ span.file {
     min-width: 0;
   }
   #contents .contents .mobile-card-value .red-btn,
+  #contents .contents .mobile-card-value .red_btn,
   #contents .contents .mobile-card-value .black-icon-btn,
-  #contents .contents .mobile-card-value .gray-icon-btn {
+  #contents .contents .mobile-card-value .black_icon_btn,
+  #contents .contents .mobile-card-value .gray-icon-btn,
+  #contents .contents .mobile-card-value .gray_icon_btn {
     padding: 7px 10px;
   }
   #contents .contents .mobile-card-empty-item {
@@ -1934,7 +1977,8 @@ span.file {
     gap: 8px;
     margin: 0 0 10px;
   }
-  #contents .contents .mobile-card-actions .red-btn {
+  #contents .contents .mobile-card-actions .red-btn,
+  #contents .contents .mobile-card-actions .red_btn {
     padding: 8px 14px;
   }
   #contents .contents iframe {

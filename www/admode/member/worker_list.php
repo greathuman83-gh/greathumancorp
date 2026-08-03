@@ -48,25 +48,26 @@ $table_name = 'gh_worker_table';
 	$bind_param = array();
 	$where = " where 1=1 ";
 
-	// 검색 컬럼 — escapeQuery 화이트리스트 후 LIKE
-	$func_library->appendWhereLike($where, $bind_param, $key_type, $keyword, 'a_id');
+	// 검색 컬럼 — escapeQuery 화이트리스트 후 LIKE (기본 w_name)
+	$func_library->appendWhereLike($where, $bind_param, $key_type, $keyword, 'w_name');
 
 	$orderby = "idx desc";
 	$list_result = $query_library->getList($where, $bind_param, $table_name, $orderby, $pg, 10);
 	$number = $list_result['number'];
 	foreach ($list_result['result'] as $d) {
-		$regdate = substr($d['regdate'], 0, 10);
+		$regdate = substr((string)($d['regdate'] ?? ''), 0, 10);
+		$worker_type_label = $_workerType[$d['w_type']] ?? '';
 
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
-			<td><?= $_workerType[$d['w_type']] ?></td>
-			<td class="td2"><a href="./worker_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= $d['idx'] ?>"><?= $d['w_name'] ?></a></td>
-			<td><?= $d['w_enterdate'] ?></td>
-			<td><?= $regdate ?></td>
+			<td><?= gh_h($worker_type_label) ?></td>
+			<td class="td2"><a href="./worker_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($d['w_name'] ?? '') ?></a></td>
+			<td><?= gh_h($d['w_enterdate'] ?? '') ?></td>
+			<td><?= gh_h($regdate) ?></td>
 			<td>
-				<button type="button" class="black_icon_btn" onclick="window.location='./worker_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= $d['idx'] ?>'">수정</button>
-				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./worker_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= $d['idx'] ?>';">삭제</button>
+				<button type="button" class="black_icon_btn" onclick="window.location='./worker_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
+				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./worker_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
 			</td>
 		</tr>
 		<tr>
