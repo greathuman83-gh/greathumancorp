@@ -158,13 +158,17 @@ a:hover {
 #header .head ul li:first-child {
   padding-left: 25px;
   width: 47%;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  line-height: normal;
 }
 #header .head ul li:first-child div {
   color: #cccccc;
   font-size: 15px;
-  display: inline-block;
-  vertical-align: bottom;
-  height: 70px;
+  display: block;
+  height: auto;
+  line-height: 1.2;
 }
 #header .head ul li:nth-child(2) {
   float: right;

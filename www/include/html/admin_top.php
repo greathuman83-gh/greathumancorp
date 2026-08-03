@@ -45,8 +45,7 @@ $category_table = 'gh_category_table'; //카테고리 테이블
 					<span></span>
 				</button>
 				<ul>
-					<li><img src="/images/admin/main/admin_top_logo.png">&nbsp;&nbsp;&nbsp;<div>|&nbsp;&nbsp;&nbsp;웹 통합 관리 시스템 <?= ADMIN_VERSION ?></div>
-					</li>
+					<li><img src="/images/admin/main/admin_top_logo.png" width="150" alt=""><div>| 웹 통합 관리 시스템 <?= ADMIN_VERSION ?></div></li>
 					<li><a href="/" target="_blank">
 							<div><img src="/images/admin/main/admin_icon1.png"><br>HOMEPAGE</div>
 						</a><!-- <a href="<?= ADMIN_DIR ?>/member/manager_list.php?pn=2&sn=1"><div><img src="/images/admin/main/admin_icon2.png"><br>MAIN</div></a> --></li>

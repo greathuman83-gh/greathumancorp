@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "www/**"
 
 jobs:
   deploy:
@@ -12,16 +14,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Deploy via FTP
+      - name: Deploy changed files via FTP
         env:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
@@ -35,18 +41,114 @@ jobs:
             exit 1
           fi
 
-          # 카페24 등 — 로컬 접속과 동일하게 FTP(패시브) 사용
-          # 로컬 www/ → 원격 /www/
-          # data/, .well-known/, DBConnect/ 은 동기화·삭제 제외
-          # --ignore-time: Actions checkout mtime ≠ FTP 보존 시각이라 미변경 파일이 매번 재전송되는 것 방지(크기 동일하면 스킵)
-          lftp <<EOF
-          set cmd:fail-exit yes
-          set ftp:passive-mode true
-          set ftp:ssl-allow no
-          set net:timeout 30
-          set net:max-retries 2
-          set net:reconnect-interval-base 5
-          open -u "${SERVER_USERNAME}","${SERVER_PASSWORD}" -p ${SERVER_PORT} ftp://${SERVER_HOST}
-          mirror -R --delete --ignore-time --no-perms --verbose --exclude-glob data/** --exclude-glob .well-known/** --exclude-glob DBConnect/** ./www/ /www/
-          bye
-          EOF
+          # 동기화 제외 — 로컬·원격 모두 배포 대상에서 제외
+          should_skip() {
+            case "$1" in
+              www/data/*|www/.well-known/*|www/DBConnect/*) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          # lftp 경로용 따옴표 이스케이프
+          lftp_quote() {
+            printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+          }
+
+          UPLOAD_LIST="$(mktemp)"
+          DELETE_LIST="$(mktemp)"
+          LFTP_CMDS="$(mktemp)"
+          trap 'rm -f "$UPLOAD_LIST" "$DELETE_LIST" "$LFTP_CMDS"' EXIT
+
+          # before가 없거나(신규 브랜치) 로컬에 없으면 www/ 전체 업로드 대상으로 수집
+          if [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            echo "No usable before SHA — staging all www/ files (excluding skipped paths)"
+            while IFS= read -r -d '' path; do
+              should_skip "$path" && continue
+              printf '%s\0' "$path" >> "$UPLOAD_LIST"
+            done < <(git ls-files -z -- www/)
+          else
+            echo "Diff: ${BEFORE_SHA}..${AFTER_SHA}"
+            # A/C/M/R/T 업로드, D·R(old) 삭제 — 원격 전체 스캔 없이 git 변경분만 반영
+            while IFS= read -r -d '' status; do
+              kind="${status:0:1}"
+              case "$kind" in
+                R|C)
+                  IFS= read -r -d '' old_path
+                  IFS= read -r -d '' new_path
+                  if [ "$kind" = "R" ] && ! should_skip "$old_path"; then
+                    printf '%s\0' "$old_path" >> "$DELETE_LIST"
+                  fi
+                  if ! should_skip "$new_path"; then
+                    printf '%s\0' "$new_path" >> "$UPLOAD_LIST"
+                  fi
+                  ;;
+                D)
+                  IFS= read -r -d '' path
+                  should_skip "$path" && continue
+                  printf '%s\0' "$path" >> "$DELETE_LIST"
+                  ;;
+                A|M|T)
+                  IFS= read -r -d '' path
+                  should_skip "$path" && continue
+                  printf '%s\0' "$path" >> "$UPLOAD_LIST"
+                  ;;
+                *)
+                  IFS= read -r -d '' path || true
+                  echo "Skip unhandled status: $status $path"
+                  ;;
+              esac
+            done < <(git diff --name-status -z "$BEFORE_SHA" "$AFTER_SHA" -- www/)
+          fi
+
+          upload_count=0
+          delete_count=0
+          if [ -s "$UPLOAD_LIST" ]; then
+            upload_count="$(tr -cd '\0' < "$UPLOAD_LIST" | wc -c)"
+          fi
+          if [ -s "$DELETE_LIST" ]; then
+            delete_count="$(tr -cd '\0' < "$DELETE_LIST" | wc -c)"
+          fi
+
+          echo "Uploads: ${upload_count}, Deletes: ${delete_count}"
+
+          if [ "$upload_count" -eq 0 ] && [ "$delete_count" -eq 0 ]; then
+            echo "No www/ changes to deploy"
+            exit 0
+          fi
+
+          {
+            echo 'set cmd:fail-exit yes'
+            echo 'set ftp:passive-mode true'
+            echo 'set ftp:ssl-allow no'
+            echo 'set net:timeout 30'
+            echo 'set net:max-retries 2'
+            echo 'set net:reconnect-interval-base 5'
+            echo "open -u \"${SERVER_USERNAME}\",\"${SERVER_PASSWORD}\" -p ${SERVER_PORT} ftp://${SERVER_HOST}"
+
+            # 삭제 — 이미 없으면 실패하지 않도록 -f
+            if [ -s "$DELETE_LIST" ]; then
+              while IFS= read -r -d '' path; do
+                remote="/${path}"
+                echo "rm -f \"$(lftp_quote "$remote")\""
+                echo "echo \"deleted ${remote}\""
+              done < "$DELETE_LIST"
+            fi
+
+            # 업로드 — 원격 디렉터리 생성 후 put
+            if [ -s "$UPLOAD_LIST" ]; then
+              while IFS= read -r -d '' path; do
+                if [ ! -f "$path" ]; then
+                  echo "echo \"skip missing local file: ${path}\"" 
+                  continue
+                fi
+                remote_dir="/$(dirname "$path")"
+                echo "mkdir -p \"$(lftp_quote "$remote_dir")\""
+                echo "put -O \"$(lftp_quote "$remote_dir")\" \"$(lftp_quote "./${path}")\""
+                echo "echo \"uploaded /${path}\""
+              done < "$UPLOAD_LIST"
+            fi
+
+            echo 'bye'
+          } > "$LFTP_CMDS"
+
+          lftp -f "$LFTP_CMDS"
