@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "www/**"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -59,8 +60,16 @@ jobs:
           LFTP_CMDS="$(mktemp)"
           trap 'rm -f "$UPLOAD_LIST" "$DELETE_LIST" "$LFTP_CMDS"' EXIT
 
+          # workflow_dispatch 등 before가 비면 HEAD^와 비교
+          if [ -z "${BEFORE_SHA}" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            if git rev-parse --verify "${AFTER_SHA}^" >/dev/null 2>&1; then
+              BEFORE_SHA="$(git rev-parse "${AFTER_SHA}^")"
+              echo "Using parent commit as before SHA: ${BEFORE_SHA}"
+            fi
+          fi
+
           # before가 없거나(신규 브랜치) 로컬에 없으면 www/ 전체 업로드 대상으로 수집
-          if [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+          if [ -z "${BEFORE_SHA}" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
             echo "No usable before SHA — staging all www/ files (excluding skipped paths)"
             while IFS= read -r -d '' path; do
               should_skip "$path" && continue
@@ -142,7 +151,8 @@ jobs:
                   continue
                 fi
                 remote_dir="/$(dirname "$path")"
-                echo "mkdir -p \"$(lftp_quote "$remote_dir")\""
+                # -f: 카페24 등에서 기존 디렉터리 mkdir 시 550 File exists 무시
+                echo "mkdir -pf \"$(lftp_quote "$remote_dir")\""
                 echo "put -O \"$(lftp_quote "$remote_dir")\" \"$(lftp_quote "./${path}")\""
                 echo "echo \"uploaded /${path}\""
               done < "$UPLOAD_LIST"
