@@ -7,45 +7,43 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy via WinSCP
-        shell: powershell
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy via SFTP
         env:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
         run: |
-          $winscp = "C:\Program Files (x86)\WinSCP\WinSCP.com"
-          $localPath = "$pwd\www\" # 로컬 경로
-          $remotePath = "/www/" # 원격 서버 경로
+          set -euo pipefail
 
-          $passEscaped = $env:SERVER_PASSWORD -replace '"', '""'
-          $openLine = "open sftp://$($env:SERVER_USERNAME)@$($env:SERVER_HOST):$($env:SERVER_PORT)/ -hostkey=* -password=`"$passEscaped`""
+          if [ -z "${SERVER_USERNAME}" ] || [ -z "${SERVER_HOST}" ] || [ -z "${SERVER_PORT}" ] || [ -z "${SERVER_PASSWORD}" ]; then
+            echo "Required secrets are missing (SERVER_USERNAME/HOST/PORT/PASSWORD)"
+            exit 1
+          fi
 
-          $scriptLines = @(
-            $openLine
-            "option batch abort"
-            "option confirm off"
-            "option transfer binary"
-            # 원격 /www/data, /www/.well-known 은 동기화·삭제 제외
-            "synchronize remote -criteria=time,size -delete -filemask=`"*;|data/;.well-known/`" ""$localPath"" ""$remotePath"""
-            "exit"
-          )
+          if [ ! -d "www" ]; then
+            echo "Local path not found: www/"
+            exit 1
+          fi
 
-          $scriptPath = Join-Path $pwd "deploy_script.txt"
-          $scriptLines -join "`r`n" | Out-File -FilePath $scriptPath -Encoding utf8
+          # 로컬 www/ → 원격 /www/
+          # data/, .well-known/ 은 동기화·삭제 제외
+          lftp <<EOF
+          set cmd:fail-exit yes
+          set sftp:auto-confirm yes
+          set net:timeout 30
+          set net:max-retries 2
+          open -u "${SERVER_USERNAME}","${SERVER_PASSWORD}" -p ${SERVER_PORT} sftp://${SERVER_HOST}
+          mirror -R --delete --verbose --exclude-glob data/** --exclude-glob .well-known/** ./www/ /www/
+          bye
+          EOF
 
-          if (-not (Test-Path $winscp)) { throw "WinSCP not found at: $winscp" }
-          if (-not (Test-Path $localPath)) { throw "Local path not found: $localPath" }
-
-          & $winscp /ini=nul /script="$scriptPath"
-          $exitCode = $LASTEXITCODE
-          if ($exitCode -ne 0) { throw "WinSCP failed with exit code: $exitCode" }
-
-          if (Test-Path $scriptPath) { Remove-Item $scriptPath -Force }
