@@ -1,8 +1,16 @@
 <?php
+// 근무자 목록 — gh_worker_table, 지급내역확인 → bank_list 출금·이름 검색
 $gh_path = '../../';
 include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 
 $table_name = 'gh_worker_table';
+// 지급내역확인 → 통장거래내역(출금) 검색 링크용 menu_code
+$bank_menu_row = $query_library->getData2(
+	' where m_link like :mLink and language = :language ',
+	[['mLink', 'bank_list.php', 'like'], ['language', LANGUAGE]],
+	'gh_admin_menu_table'
+);
+$bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?? '') : '';
 ?>
 
 <table width="100%" class="adminMenuTable">
@@ -27,6 +35,8 @@ $table_name = 'gh_worker_table';
 	</col>
 	<col>
 	</col>
+	<col width="120" align="center">
+	</col>
 	<col width="110" align="center">
 	</col>
 	<col width="110" align="center">
@@ -34,12 +44,13 @@ $table_name = 'gh_worker_table';
 	<col width="110" align="center">
 	</col>
 	<tr>
-		<td colspan="9" class="line1"></td>
+		<td colspan="7" class="line1"></td>
 	</tr>
 	<tr class="bgcol1 bold col1 ht center">
 		<td>번호</td>
 		<td>고용형태</td>
 		<td>이름</td>
+		<td>지급내역</td>
 		<td>입사일</td>
 		<td>등록일</td>
 		<td><button type="button" class="red_btn" onclick="window.location='./worker_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button></td>
@@ -57,12 +68,22 @@ $table_name = 'gh_worker_table';
 	foreach ($list_result['result'] as $d) {
 		$regdate = substr((string)($d['regdate'] ?? ''), 0, 10);
 		$worker_type_label = $_workerType[$d['w_type']] ?? '';
+		// 지급내역확인 — bank_list 출금(search_category=1) + 보낸분/받는분(이름)
+		$worker_name = (string)($d['w_name'] ?? '');
+		$bank_qs = 'search_category=1&key_type=counterparty&keyword=' . rawurlencode($worker_name);
+		if ($bank_menu_code !== '') {
+			$bank_qs = 'menu_code=' . rawurlencode($bank_menu_code) . '&' . $bank_qs;
+		}
+		$bank_url = '../invoice/bank_list.php?' . $bank_qs;
 
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
 			<td><?= gh_h($worker_type_label) ?></td>
-			<td class="td2"><a href="./worker_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($d['w_name'] ?? '') ?></a></td>
+			<td class="td2"><a href="./worker_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($worker_name) ?></a></td>
+			<td>
+				<button type="button" class="black_icon_btn" onclick="window.location='<?= gh_h($bank_url) ?>'">지급내역확인</button>
+			</td>
 			<td><?= gh_h($d['w_enterdate'] ?? '') ?></td>
 			<td><?= gh_h($regdate) ?></td>
 			<td>
@@ -71,7 +92,7 @@ $table_name = 'gh_worker_table';
 			</td>
 		</tr>
 		<tr>
-			<td colspan="9" class="line2"></td>
+			<td colspan="7" class="line2"></td>
 		</tr>
 	<?php $number--;
 	} ?>
