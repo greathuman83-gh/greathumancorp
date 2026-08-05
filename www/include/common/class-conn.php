@@ -9,7 +9,7 @@ class CONN
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
-            $host = 'localhost';
+            $host = '222.122.198.189';
             $port = 3306;
             $user = 'greathumancorp';
             $password = 'ghcorpontra26!@';
