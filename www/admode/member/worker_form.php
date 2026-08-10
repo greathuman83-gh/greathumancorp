@@ -50,7 +50,7 @@ $size_detail = '첨부파일';
 		<tr class="ht">
 			<td class="td1">입사일</td>
 			<td class="td2">
-				<input type="text" name="w_enterdate" class="input_text date" value="<?= htmlspecialchars((string)($d['w_enterdate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" style="width:200px;" maxlength="10" readonly>
+				<input type="date" name="w_enterdate" class="input_text" value="<?= htmlspecialchars((string)($d['w_enterdate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" style="width:200px;">
 			</td>
 		</tr>
 		<tr>
@@ -59,7 +59,7 @@ $size_detail = '첨부파일';
 		<tr class="ht">
 			<td class="td1">퇴사일</td>
 			<td class="td2">
-				<input type="text" name="w_leavedate" class="input_text date" value="<?= htmlspecialchars((string)($d['w_leavedate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" style="width:200px;" maxlength="10" readonly>
+				<input type="date" name="w_leavedate" class="input_text" value="<?= htmlspecialchars((string)($d['w_leavedate'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" style="width:200px;">
 			</td>
 		</tr>
 		<tr>
@@ -134,8 +134,8 @@ $size_detail = '첨부파일';
 </form>
 <script type="text/javascript">
 	// 첨부파일·옵션 UI — 동적 행 추가/삭제, optionSelect 연동
-	document.addEventListener('DOMContentLoaded', function () {
-		document.addEventListener('click', function (e) {
+	document.addEventListener('DOMContentLoaded', function() {
+		document.addEventListener('click', function(e) {
 			var addFileBtn = e.target.closest('.add_file');
 			if (addFileBtn) {
 				var count = 10;
