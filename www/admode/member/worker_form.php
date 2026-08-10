@@ -103,7 +103,7 @@ $size_detail = '첨부파일';
 						<div class="file-list">
 							<input type="hidden" name="old_file[]" value="<?= $attach_files[$i] ?>">
 							<input type="hidden" name="old_file_name[]" value="<?= $attach_files_name[$i] ?>">
-							<input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?>
+							<input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="attachFileCheck(this,<?= FILE_SIZE ?>)"> <?= $size_detail ?>
 							<?php if ($attach_files[$i]) { ?>
 								<?php if (strpos($_config['img_ext'], $file_extention[1]) !== false) { ?>
 									<br><a href="<?= $gh_path ?>data/worker/<?= gh_h($attach_files[$i]) ?>" target="_blank" rel="noopener noreferrer"><img src="<?= $gh_path ?>data/worker/<?= gh_h($attach_files[$i]) ?>" width="200" style="margin-top:5px;"></a>
@@ -115,7 +115,7 @@ $size_detail = '첨부파일';
 						</div>
 					<?php } ?>
 				<?php } else { ?>
-					<div class="file-list"><input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?></div>
+					<div class="file-list"><input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="attachFileCheck(this,<?= FILE_SIZE ?>)"> <?= $size_detail ?></div>
 				<?php } ?>
 			</td>
 		</tr>
