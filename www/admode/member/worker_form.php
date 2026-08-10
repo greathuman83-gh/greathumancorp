@@ -106,7 +106,7 @@ $size_detail = '첨부파일';
 							<input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?>
 							<?php if ($attach_files[$i]) { ?>
 								<?php if (strpos($_config['img_ext'], $file_extention[1]) !== false) { ?>
-									<br><img src="<?= $gh_path ?>data/worker/<?= $attach_files[$i] ?>" width="200" style="margin-top:5px;">
+									<br><a href="<?= $gh_path ?>data/worker/<?= gh_h($attach_files[$i]) ?>" target="_blank" rel="noopener noreferrer"><img src="<?= $gh_path ?>data/worker/<?= gh_h($attach_files[$i]) ?>" width="200" style="margin-top:5px;"></a>
 								<?php } else { ?>
 									<br><span class="file" style="margin-top:5px;"></span> <a href="<?= $gh_path ?>board/download.php?board=N&bbsid=worker&file_name=<?= $attach_files[$i] ?>&o_file_name=<?= urlencode($attach_files_name[$i]) ?>" download><?= $attach_files_name[$i] ?></a>
 								<?php } ?>
