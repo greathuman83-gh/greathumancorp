@@ -51,7 +51,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 		<td>고용형태</td>
 		<td>이름</td>
 		<td>지급내역</td>
-		<td>입사일</td>
+		<td>입사일/계약일</td>
 		<td>등록일</td>
 		<td><button type="button" class="red_btn" onclick="window.location='./worker_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button></td>
 	</tr>

@@ -93,14 +93,14 @@ $size_detail = '첨부파일';
 			<td colspan="2" class="line2"></td>
 		</tr>
 		<tr class="ht">
-			<td class="td1">첨부파일일 <button type="button" class="add_file red_icon_btn">+</button></td>
+			<td class="td1">첨부파일 <button type="button" class="add_file red_icon_btn">+</button></td>
 			<td class="td2">
 				<?php if (array_filter($attach_files) != []) { ?>
 					<?php
 					for ($i = 0; $i < count((array)$attach_files); $i++) {
 						$file_extention = explode('.', $attach_files[$i]);
 					?>
-						<div class="fileList">
+						<div class="file-list">
 							<input type="hidden" name="old_file[]" value="<?= $attach_files[$i] ?>">
 							<input type="hidden" name="old_file_name[]" value="<?= $attach_files_name[$i] ?>">
 							<input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?>
@@ -115,7 +115,7 @@ $size_detail = '첨부파일';
 						</div>
 					<?php } ?>
 				<?php } else { ?>
-					<div class="fileList"><input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?></div>
+					<div class="file-list"><input type="file" class="input_text" name="attach_files[]" class="attachFiles" onchange="imgFileCheck(this,<?= IMG_SIZE ?>)"> <?= $size_detail ?></div>
 				<?php } ?>
 			</td>
 		</tr>
@@ -139,7 +139,7 @@ $size_detail = '첨부파일';
 			var addFileBtn = e.target.closest('.add_file');
 			if (addFileBtn) {
 				var count = 10;
-				var fileLists = document.querySelectorAll('.fileList');
+				var fileLists = document.querySelectorAll('.file-list');
 
 				if (fileLists.length >= count) {
 					alert('상세이미지는 ' + count + '개까지 등록하실 수 있습니다.');
@@ -156,14 +156,14 @@ $size_detail = '첨부파일';
 
 			var delFileBtn = e.target.closest('.del_file');
 			if (delFileBtn) {
-				var fileLists = document.querySelectorAll('.fileList');
+				var fileLists = document.querySelectorAll('.file-list');
 				if (fileLists.length < 2) {
 					alert('더이상 삭제하실 수 없습니다.');
 					return;
 				}
 
 				if (window.confirm('삭제하시겠습니까?')) {
-					var parent = delFileBtn.closest('.fileList');
+					var parent = delFileBtn.closest('.file-list');
 					if (parent) {
 						parent.remove();
 					}
