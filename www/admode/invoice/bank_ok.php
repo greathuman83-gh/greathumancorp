@@ -374,7 +374,8 @@ if (($w ?? '') == 'eu') {
 		}
 	}
 
-	if ($header_idx === null
+	if (
+		$header_idx === null
 		|| !isset($col_map['transaction_datetime'], $col_map['counterparty'], $col_map['withdraw'], $col_map['deposit'])
 	) {
 		$func_library->alert('엑셀 헤더(거래일시, 보낸분/받는분, 출금액, 입금액)를 찾을 수 없습니다.');
@@ -429,7 +430,8 @@ if (($w ?? '') == 'eu') {
 		}
 
 		$dup_key = $content['transaction_datetime'] . "\0" . $content['counterparty'] . "\0" . $content['amount'];
-		if (isset($seen_keys[$dup_key])
+		if (
+			isset($seen_keys[$dup_key])
 			|| bank_is_duplicate($conn, $table_name, $content['transaction_datetime'], $content['counterparty'], $content['amount'])
 		) {
 			$skip_count++;
