@@ -104,8 +104,8 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 		<td>공급가액</td>
 		<td>합계금액</td>
 		<td>대금처리상태</td>
+		<td>작성일</td>
 		<td>발급일</td>
-		<td>등록일</td>
 		<td><button type="button" class="red_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button></td>
 	</tr>
 	<?php
@@ -120,9 +120,9 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 		$bind_param[] = ['keyword', $keyword_val, 'like'];
 	}
 
-	// 발급일 연도 필터
+	// 작성일 연도 필터
 	if ($search_year !== '') {
-		$where .= " and LEFT(JSON_UNQUOTE(JSON_EXTRACT(i_content, '$.issue_date')), 4) = :searchYear";
+		$where .= " and LEFT(JSON_UNQUOTE(JSON_EXTRACT(i_content, '$.write_date')), 4) = :searchYear";
 		$bind_param[] = ['searchYear', $search_year];
 	}
 
@@ -132,7 +132,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 		$bind_param[] = ['searchPaymentStatus', $search_payment_status];
 	}
 
-	// 발급일 내림차순 — i_content.issue_date (JSON), 동일 시 idx desc
+	// 작성일 내림차순 — i_content.write_date (JSON), 동일 시 idx desc
 	$list_count = 10;
 	$pg = max(1, (int)($pg ?? 1));
 	$list_total = (int)$query_library->dataTotal($where, $bind_param, $table_name);
@@ -141,7 +141,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 	$number = $list_total - $list_start;
 
 	$sql = 'SELECT * FROM `' . $table_name . '` ' . $where
-		. " ORDER BY JSON_UNQUOTE(JSON_EXTRACT(i_content, '$.issue_date')) DESC, idx DESC"
+		. " ORDER BY JSON_UNQUOTE(JSON_EXTRACT(i_content, '$.write_date')) DESC, idx DESC"
 		. ' LIMIT :listStart, :listCount';
 	$stmt = $conn->prepare($sql);
 	foreach ($bind_param as $param) {
@@ -159,7 +159,6 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 	$list_result = ['total_page' => $total_page, 'list_total' => $list_total];
 
 	foreach ($list_rows as $d) {
-		$regdate = substr((string)($d['regdate'] ?? ''), 0, 10);
 		$content = json_decode((string)($d['i_content'] ?? ''), true);
 		if (!is_array($content)) {
 			$content = [];
@@ -182,14 +181,15 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 			? '₩' . number_format((float)$total_num)
 			: '';
 		// 합계금액 — bank_list 거래금액(key_type=amount) 검색 링크
-		$total_html = gh_h($total_text);
+		$total_html = $total_text !== '' ? '<strong>' . gh_h($total_text) . '</strong>' : '';
 		if ($total_text !== '' && $total_num !== '') {
 			$bank_qs = 'key_type=amount&keyword=' . rawurlencode($total_num);
 			if ($bank_menu_code !== '') {
 				$bank_qs = 'menu_code=' . rawurlencode($bank_menu_code) . '&' . $bank_qs;
 			}
-			$total_html = '<a href="./bank_list.php?' . $bank_qs . '">' . gh_h($total_text) . '</a>';
+			$total_html = '<a href="./bank_list.php?' . $bank_qs . '"><strong>' . gh_h($total_text) . '</strong></a>';
 		}
+		$write_date = (string)($content['write_date'] ?? '');
 		$issue_date = (string)($content['issue_date'] ?? '');
 		// 대금처리상태 — 미처리(파랑) / 부분처리(오렌지) / 처리완료(빨강)
 		$payment_status = (string)($d['i_payment_status'] ?? '1');
@@ -206,8 +206,8 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 			<td><?= gh_h($supply_text) ?></td>
 			<td><?= $total_html ?></td>
 			<td><?= $payment_status_html ?></td>
+			<td><?= gh_h($write_date) ?></td>
 			<td><?= gh_h($issue_date) ?></td>
-			<td><?= gh_h($regdate) ?></td>
 			<td>
 				<button type="button" class="black_icon_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
 				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./invoice_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
