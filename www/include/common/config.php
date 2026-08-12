@@ -40,7 +40,7 @@ define('_GHBOARD_', true);
 define('GH_PATH', $root_path);
 define('GH_URL', HOMEPAGE_URL);
 define('GH_DIR_PERMISSION', 0707);
-define('ADMIN_VERSION', 'V3.1.2'); //관리자 페이지 버전
+define('ADMIN_VERSION', 'V3.1.3'); //관리자 페이지 버전
 define('LANGUAGE', $_SESSION['language']);
 define('DEVICE', $func_library->deviceCheck());
 

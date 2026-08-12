@@ -532,12 +532,17 @@ document.addEventListener("DOMContentLoaded", function () {
     var isMobile = isMobileAdminMenu();
     var contents = document.getElementById("contents");
     var listTables = [];
+    // form 안쪽 중첩 테이블도 포함 — 사업건 등 검색폼+목록 구조 대응
     if (contents) {
-      contents.querySelectorAll(".contents > table.admin-menu-table, .contents > table.adminMenuTable").forEach(function (table) {
-        if (table.querySelector("tr.bgcol1, tr.bold.col1")) {
-          listTables.push(table);
-        }
-      });
+      contents
+        .querySelectorAll(
+          ".contents table.admin-menu-table, .contents table.adminMenuTable",
+        )
+        .forEach(function (table) {
+          if (table.querySelector("tr.bgcol1, tr.bold.col1")) {
+            listTables.push(table);
+          }
+        });
     }
     var hasActiveCard = false;
 
