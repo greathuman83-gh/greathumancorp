@@ -1,5 +1,48 @@
 <?php
 include_once __DIR__ . '/../../include/common/common.php';
+
+// 이미 세션 로그인된 경우 — 로그인 폼 대신 관리자로 이동
+if (!empty($admin_id)) {
+	$func_library->gotoUrl('../member/manager_list.php?menu_code=001001');
+}
+
+// 자동로그인 쿠키 — language|a_id|token 검증 후 세션 복구 (1년 쿠키)
+$auto_login_cookie = $_COOKIE['admin_auto_login'] ?? '';
+if ($auto_login_cookie !== '') {
+	$auto_parts = explode('|', $auto_login_cookie, 3);
+	if (count($auto_parts) === 3) {
+		[$cookie_language, $cookie_a_id, $cookie_token] = $auto_parts;
+		if ($cookie_language !== '' && $cookie_a_id !== '' && preg_match('/^[a-f0-9]{64}$/', $cookie_token)) {
+			$admin_where = ' where language = :language and BINARY(a_id) = :a_id ';
+			$admin_bind_param = [];
+			$admin_bind_param[] = ['a_id', $cookie_a_id];
+			$admin_bind_param[] = ['language', $cookie_language];
+			$admin_data = $query_library->getData2($admin_where, $admin_bind_param, 'gh_admin');
+			$token_hash = hash('sha256', $cookie_token);
+			if (
+				$admin_data
+				&& ($admin_data['a_auto_login_token'] ?? '') !== ''
+				&& hash_equals((string) $admin_data['a_auto_login_token'], $token_hash)
+			) {
+				$_SESSION['admin_id'] = $admin_data['a_id'];
+				$_SESSION['admin_name'] = $admin_data['a_name'];
+				$_SESSION['admin_level'] = $admin_data['a_level'];
+				$_SESSION['admin_super'] = $admin_data['super'];
+				$_SESSION['admin_auth'] = $admin_data['a_authority'];
+				$_SESSION['language'] = $cookie_language;
+				$func_library->gotoUrl('../member/manager_list.php?menu_code=001001');
+			}
+		}
+	}
+	// 쿠키 위조·만료 토큰 — 자동로그인 쿠키만 폐기
+	setcookie('admin_auto_login', '', [
+		'expires' => time() - 3600,
+		'path' => '/',
+		'secure' => COOKIE_SECURE,
+		'httponly' => true,
+		'samesite' => 'Strict',
+	]);
+}
 ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
@@ -16,6 +59,22 @@ include_once __DIR__ . '/../../include/common/common.php';
 			vertical-align: top;
 			position: relative;
 			padding-top: 80px;
+		}
+
+		.login-box .login-box-in .auto-login {
+			width: 456px;
+			margin: 12px auto 0;
+			text-align: left;
+			font-size: 14px;
+			color: #555;
+			box-sizing: border-box;
+		}
+
+		.login-box .login-box-in .auto-login label {
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
 		}
 
 		@media screen and (max-width: 767px) {
@@ -48,6 +107,7 @@ include_once __DIR__ . '/../../include/common/common.php';
 
 			.login-box .login-box-in .login-info,
 			.login-box .login-box-in .login-input,
+			.login-box .login-box-in .auto-login,
 			.login-box .login-box-in .submit-button,
 			.copyright {
 				width: 100%;
@@ -85,6 +145,12 @@ include_once __DIR__ . '/../../include/common/common.php';
 					</div>
 					<input type="text" class="login-input" name="a_id" id="a_id" placeholder="<?= $_pageText['아이디를 입력해 주세요.'] ?>"><br>
 					<input type="password" class="login-input" name="a_pwd" id="a_pwd" placeholder="<?= $_pageText['비밀번호를 입력해 주세요.'] ?>"><br>
+					<div class="auto-login">
+						<label for="auto_login">
+							<input type="checkbox" name="auto_login" id="auto_login" value="Y">
+							<?= $_pageText['자동 로그인'] ?>
+						</label>
+					</div>
 					<button type="submit" class="submit-button"><?= $_pageText['로그인'] ?></button>
 				</div>
 			</div>

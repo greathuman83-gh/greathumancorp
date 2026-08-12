@@ -253,11 +253,22 @@ function attachFileCheck(file, max = 10) {
   }
 }
 
+// slide 애니메이션 — 이전 transitionend가 남아 있으면 열림/닫힘이 뒤집힘
+function clearSlideTransition(el) {
+  if (!el || !el._slideEnd) return;
+  el.removeEventListener("transitionend", el._slideEnd);
+  el._slideEnd = null;
+  el.style.removeProperty("height");
+  el.style.removeProperty("overflow");
+  el.style.removeProperty("transition");
+}
+
 // slideDown — height transition (easeOutQuart ≈ cubic-bezier)
 function slideDown(el, duration, easing) {
   if (!el) return;
   duration = duration || 400;
   easing = easing || "ease";
+  clearSlideTransition(el);
   el.style.removeProperty("display");
   var display = window.getComputedStyle(el).display;
   if (display === "none") display = "block";
@@ -268,12 +279,15 @@ function slideDown(el, duration, easing) {
   el.style.transition = "height " + duration + "ms " + easing;
   el.offsetHeight;
   el.style.height = height + "px";
-  function onEnd() {
+  function onEnd(e) {
+    if (e.target !== el || e.propertyName !== "height") return;
     el.style.removeProperty("height");
     el.style.removeProperty("overflow");
     el.style.removeProperty("transition");
     el.removeEventListener("transitionend", onEnd);
+    el._slideEnd = null;
   }
+  el._slideEnd = onEnd;
   el.addEventListener("transitionend", onEnd);
 }
 
@@ -282,18 +296,23 @@ function slideUp(el, duration, easing) {
   if (!el) return;
   duration = duration || 400;
   easing = easing || "ease";
+  if (window.getComputedStyle(el).display === "none") return;
+  clearSlideTransition(el);
   el.style.height = el.scrollHeight + "px";
   el.style.overflow = "hidden";
   el.style.transition = "height " + duration + "ms " + easing;
   el.offsetHeight;
   el.style.height = "0px";
-  function onEnd() {
+  function onEnd(e) {
+    if (e.target !== el || e.propertyName !== "height") return;
     el.style.display = "none";
     el.style.removeProperty("height");
     el.style.removeProperty("overflow");
     el.style.removeProperty("transition");
     el.removeEventListener("transitionend", onEnd);
+    el._slideEnd = null;
   }
+  el._slideEnd = onEnd;
   el.addEventListener("transitionend", onEnd);
 }
 
@@ -772,8 +791,11 @@ document.addEventListener("DOMContentLoaded", function () {
         slideUp(submenu, 200);
         if (parent) parent.classList.remove("mobile-open");
       } else {
+        // 대상 메뉴까지 slideUp하면 transitionend가 직후 slideDown을 다시 닫음
         document.querySelectorAll(".admin-menu-depth2").forEach(function (el) {
-          slideUp(el, 200);
+          if (el !== submenu) {
+            slideUp(el, 200);
+          }
         });
         document.querySelectorAll(".admin-menu-depth1>ul>li").forEach(function (li) {
           li.classList.remove("mobile-open");

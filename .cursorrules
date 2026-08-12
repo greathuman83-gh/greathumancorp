@@ -6,3 +6,4 @@
 - board 스킨 전용: `board-skin-output-rules.mdc`
 - include/common 전용: `common-library-rules.mdc`
 - admode 전용: `admode-admin-rules.mdc`
+- DB 변경 컨펌: `db-change-confirmation-rules.mdc`
