@@ -629,8 +629,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      // 등록 버튼 — 마크업은 red_btn(underscore), 일부는 red-btn
       var registerButtons = headerRow
-        ? headerRow.querySelectorAll(".red-btn")
+        ? headerRow.querySelectorAll(".red-btn, .red_btn")
         : [];
       if (registerButtons.length > 0) {
         if (!actionBox) {
@@ -712,6 +713,10 @@ document.addEventListener("DOMContentLoaded", function () {
           table.parentNode.insertBefore(cardList, table);
         }
         hasActiveCard = true;
+      } else if (actionBox) {
+        // 카드 미생성 시 테이블 헤더 등록 버튼과 중복되지 않도록 제거
+        actionBox.remove();
+        actionBox = null;
       }
     });
 

@@ -29,13 +29,13 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 	<col width="120" align="center"></col>
 	<col width="110" align="center"></col>
 	<tr><td colspan="12" class="line1"></td></tr>
-	<tr class="bgcol1 bold ht center">
+	<tr class="bgcol1 bold col1 ht center">
 		<td><?=$_pageText['번호']?></td>
 		<td><?=$_pageText['타입']?></td>
 		<td><?=$_pageText['아이디']?></td>
 		<td><?=$_pageText['이름']?></td>
 		<td><?=$_pageText['등록일']?></td>
-		<td><?php if($admin_super){?><button type="button" class="red_btn" onclick="window.location='./manager_form.php?<?=$func_library->queryString('w')?>w=a'"><?=$_pageText['등록']?></button></a><?php }?></td>
+		<td><?php if($admin_super){?><button type="button" class="red_btn" onclick="window.location='./manager_form.php?<?=$func_library->queryString('w')?>w=a'"><?=$_pageText['등록']?></button><?php }?></td>
 	</tr>
 	<tr><td colspan="12" class='line2'></td></tr>
 	<?php
@@ -56,7 +56,7 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 		foreach($list_result['result'] as $d){
 		$regdate= substr($d['regdate'],0,10);
 	?>
-	<tr class="col2 ht center">
+	<tr class="list col1 ht center">
 		<td><?=$number?></td>
 		<td>
 			<?=$_adminLevel[$d['a_level']]?>

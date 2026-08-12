@@ -26,7 +26,7 @@ $table_name = 'gh_admin_menu_table';
 	<td>분류명</td>
 	<td>분류코드</td>
 	<td>사용유무</td>
-	<td><button type="button" class="red_btn" onclick="window.location='./menu_form.php?<?=$func_library->queryString('w')?>w=a&depth=1'">1차 등록</button></a></td>
+	<td><button type="button" class="red_btn" onclick="window.location='./menu_form.php?<?=$func_library->queryString('w')?>w=a&depth=1'">1차 등록</button></td>
 </tr>
 <?php
 	//1차 분류
@@ -37,7 +37,7 @@ $table_name = 'gh_admin_menu_table';
 	foreach($list_result['result'] as $d){
 	unset($bind_param);
 ?>
-<tr class="depth1 ht center" id="<?=$d['m_code']?>">
+<tr class="list depth1 ht center" id="<?=$d['m_code']?>">
 	<td class="cname td2">
 		<a href="menu_form.php?<?=$func_library->queryString()?>w=u&idx=<?=$d['idx']?>"><button type="button" class="depth1_icon_btn">1차</button>&nbsp;&nbsp;<?=$d['m_name']?></a>
 	</td>
@@ -66,7 +66,7 @@ $table_name = 'gh_admin_menu_table';
 		foreach($list_result2['result'] as $d2){
 		unset($bind_param);
 	?>
-	<tr class="depth2 ht center" id="<?=$d2['m_code']?>">
+	<tr class="list depth2 ht center" id="<?=$d2['m_code']?>">
 		<td class="cname td2">
 			<a href="menu_form.php?<?=$func_library->queryString()?>w=u&idx=<?=$d2['idx']?>"><button type="button" class="depth2_icon_btn">2차</button>&nbsp;&nbsp;<?=$d2['m_name']?></a>
 		</td>
@@ -95,7 +95,7 @@ $table_name = 'gh_admin_menu_table';
 			foreach($list_result3['result'] as $d3){
 			unset($bind_param);
 		?>
-		<tr class="depth3 ht center" id="<?=$d3['m_code']?>">
+		<tr class="list depth3 ht center" id="<?=$d3['m_code']?>">
 			<td class="cname td2">
 				<a href="menu_form.php?<?=$func_library->queryString()?>w=u&idx=<?=$d3['idx']?>"><button type="button" class="depth3_icon_btn">3차</button>&nbsp;&nbsp;<?=$d3['m_name']?></a>
 			</td>
