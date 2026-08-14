@@ -108,7 +108,7 @@ if ($summary_balance === '') {
 		<td>거래금액</td>
 		<td>거래점</td>
 		<td>거래일</td>
-		<td><button type="button" class="red_btn" onclick="window.location='./bank_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button></td>
+		<td><?php if ($admin_super) { ?><button type="button" class="red_btn" onclick="window.location='./bank_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button><?php } ?></td>
 	</tr>
 	<?php
 	$bind_param = [];
@@ -197,7 +197,7 @@ if ($summary_balance === '') {
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
-			<td class="td2"><?php if ($admin_super) { ?><a href="./bank_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($counterparty) ?></a><?php } else { ?><?= gh_h($counterparty) ?><?php } ?></td>
+			<td class="td2"><a href="./bank_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($counterparty) ?></a></td>
 			<td><?= $amount_html ?></td>
 			<td><?= gh_h($branch) ?></td>
 			<td><?= gh_h($tx_date) ?></td>
@@ -205,6 +205,8 @@ if ($summary_balance === '') {
 				<?php if ($admin_super) { ?>
 				<button type="button" class="black_icon_btn" onclick="window.location='./bank_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
 				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./bank_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
+				<?php } else { ?>
+				<button type="button" class="black_icon_btn" onclick="window.location='./bank_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">상세보기</button>
 				<?php } ?>
 			</td>
 		</tr>

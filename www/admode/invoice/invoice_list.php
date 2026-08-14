@@ -108,7 +108,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 		<td>대금처리상태</td>
 		<td>작성일</td>
 		<td>발급일</td>
-		<td><button type="button" class="red_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button></td>
+		<td><?php if ($admin_super) { ?><button type="button" class="red_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString('w') ?>w=a'">등록</button><?php } ?></td>
 	</tr>
 	<?php
 	$bind_param = [];
@@ -203,7 +203,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
-			<td class="td2"><?php if ($admin_super) { ?><a href="./invoice_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($item_name) ?></a><?php } else { ?><?= gh_h($item_name) ?><?php } ?></td>
+			<td class="td2"><a href="./invoice_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($item_name) ?></a></td>
 			<td><?= gh_h($company) ?></td>
 			<td><?= gh_h($supply_text) ?></td>
 			<td><?= $total_html ?></td>
@@ -214,6 +214,8 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 				<?php if ($admin_super) { ?>
 				<button type="button" class="black_icon_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
 				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./invoice_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
+				<?php } else { ?>
+				<button type="button" class="black_icon_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">상세보기</button>
 				<?php } ?>
 			</td>
 		</tr>

@@ -305,8 +305,8 @@ if (($w ?? '') == 'eu') {
 
 // 등록·수정 — 개별 입력값을 i_content JSON으로 저장
 if (($w ?? '') == 'a' || ($w ?? '') == 'u') {
-	if (($w ?? '') == 'u' && !$admin_super) {
-		$func_library->alert($_pageText['수정하실 권한이 없습니다.']);
+	if (!$admin_super) {
+		$func_library->alert(($w ?? '') == 'a' ? $_pageText['등록하실 권한이 없습니다.'] : $_pageText['수정하실 권한이 없습니다.']);
 	}
 	$raw = [
 		'write_date' => $write_date ?? '',

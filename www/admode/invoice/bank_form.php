@@ -35,9 +35,10 @@ $c = static function (array $content, string $key): string {
 	return (string)($content[$key] ?? '');
 };
 
-// 수정 화면 — 슈퍼관리자만 (일반 관리자는 등록·조회만)
-if (($w ?? '') == 'u' && !$admin_super) {
-	$func_library->alert($_pageText['수정하실 권한이 없습니다.']);
+$view_only = !$admin_super;
+// 등록 — 슈퍼관리자만, 상세(w=u)는 일반 관리자 읽기전용
+if (($w ?? '') != 'u' && $view_only) {
+	$func_library->alert($_pageText['등록하실 권한이 없습니다.']);
 }
 
 $tx_datetime = $c($content, 'transaction_datetime');
@@ -48,6 +49,7 @@ if (strlen($tx_datetime) >= 19) {
 }
 ?>
 <form name="fwrite" method="post" action="./bank_ok.php?<?= $func_library->queryString() ?>" onsubmit="return fwrite_submit(this);" style="margin:0px;">
+	<fieldset<?= $view_only ? ' disabled' : '' ?> style="border:0;margin:0;padding:0;min-width:0;">
 	<table align="center" cellpadding="0" cellspacing="0" class="adminMenuTable">
 		<tr>
 			<td colspan="2" class="line1"></td>
@@ -120,11 +122,16 @@ if (strlen($tx_datetime) >= 19) {
 			<td colspan="2" class="line3"></td>
 		</tr>
 	</table>
+	</fieldset>
 	<table width="100%" cellpadding="0" cellspacing="0" class="adminMenuTable" style="margin-top:30px;">
 		<tr>
 			<td align="center">
+				<?php if ($view_only) { ?>
+				<button type="button" class="gray_btn" onclick="javascript:window.location='bank_list.php?<?= $func_library->queryString('idx,w') ?>'">목록</button>
+				<?php } else { ?>
 				<button type="submit" class="red_btn">확 인</button>
 				<button type="button" class="gray_btn" onclick="javascript:window.location='bank_list.php?<?= $func_library->queryString('idx,w') ?>'">취 소</button>
+				<?php } ?>
 			</td>
 		</tr>
 	</table>
