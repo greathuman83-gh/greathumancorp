@@ -50,7 +50,7 @@ function bank_normalize_datetime(string $value): string
 		return '';
 	}
 	// 2026.07.31 14:25:00 / 2026-07-31 14:25:00
-	$value = str_replace('.', '-', $value);
+	$value = str_replace(['.', 'T'], ['-', ' '], $value);
 	$value = preg_replace('/\s+/', ' ', $value) ?? $value;
 	if (preg_match('/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/', $value, $m)) {
 		$date = $m[1];
@@ -489,20 +489,27 @@ if (($w ?? '') == 'a' || ($w ?? '') == 'u') {
 		$category = '1';
 	}
 
-	$tx_date = trim((string)($transaction_date ?? ''));
-	$tx_time = trim((string)($transaction_time ?? ''));
-	if ($tx_time === '') {
-		$tx_time = '00:00:00';
+	$tx_datetime = trim((string)($transaction_datetime ?? ''));
+
+	// 총잔액·조회기준시 — 폼에서 받지 않음, 수정 시 기존 JSON 유지 (엑셀 업로드값)
+	$keep_total_balance = '';
+	$keep_inquiry_datetime = '';
+	if (($w ?? '') == 'u') {
+		$exist = $query_library->getData((int)($idx ?? 0), $table_name);
+		$exist_content = json_decode((string)($exist['b_content'] ?? ''), true);
+		if (is_array($exist_content)) {
+			$keep_total_balance = (string)($exist_content['total_balance'] ?? '');
+			$keep_inquiry_datetime = (string)($exist_content['inquiry_datetime'] ?? '');
+		}
 	}
-	$tx_datetime = trim($tx_date . ' ' . $tx_time);
 
 	$content = bank_normalize_content([
 		'counterparty' => $counterparty ?? '',
 		'amount' => $amount ?? '',
 		'branch' => $branch ?? '',
 		'transaction_datetime' => $tx_datetime,
-		'total_balance' => $total_balance ?? '',
-		'inquiry_datetime' => $inquiry_datetime ?? '',
+		'total_balance' => $keep_total_balance,
+		'inquiry_datetime' => $keep_inquiry_datetime,
 	]);
 
 	if ($content['counterparty'] === '' || $content['amount'] === '' || $content['transaction_datetime'] === '') {

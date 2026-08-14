@@ -1841,6 +1841,8 @@ span.file {
   #contents .contents input[type="email"],
   #contents .contents input[type="tel"],
   #contents .contents input[type="file"],
+  #contents .contents input[type="date"],
+  #contents .contents input[type="datetime-local"],
   #contents .contents select,
   #contents .contents textarea {
     max-width: 100% !important;
@@ -1915,6 +1917,8 @@ span.file {
   #contents .contents form[name="fwrite"] .td2 input[type="email"],
   #contents .contents form[name="fwrite"] .td2 input[type="tel"],
   #contents .contents form[name="fwrite"] .td2 input[type="file"],
+  #contents .contents form[name="fwrite"] .td2 input[type="date"],
+  #contents .contents form[name="fwrite"] .td2 input[type="datetime-local"],
   #contents .contents form[name="fwrite"] .td2 select,
   #contents .contents form[name="fwrite"] .td2 textarea {
     width: 100% !important;

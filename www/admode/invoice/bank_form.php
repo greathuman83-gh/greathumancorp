@@ -42,10 +42,12 @@ if (($w ?? '') != 'u' && $view_only) {
 }
 
 $tx_datetime = $c($content, 'transaction_datetime');
-$tx_date = $tx_datetime !== '' ? substr($tx_datetime, 0, 10) : '';
-$tx_time = '';
-if (strlen($tx_datetime) >= 19) {
-	$tx_time = substr($tx_datetime, 11, 8);
+$tx_datetime_input = '';
+if ($tx_datetime !== '') {
+	$tx_datetime_input = str_replace(' ', 'T', $tx_datetime);
+	if (!str_contains($tx_datetime_input, 'T')) {
+		$tx_datetime_input .= 'T00:00:00';
+	}
 }
 ?>
 <form name="fwrite" method="post" action="./bank_ok.php?<?= $func_library->queryString() ?>" onsubmit="return fwrite_submit(this);" style="margin:0px;">
@@ -96,26 +98,7 @@ if (strlen($tx_datetime) >= 19) {
 		<tr class="ht">
 			<td class="td1">거래일시</td>
 			<td class="td2">
-				<input type="text" name="transaction_date" class="input_text date" value="<?= gh_h($tx_date) ?>" style="width:120px;" maxlength="10" readonly required="required">
-				<input type="text" name="transaction_time" class="input_text" value="<?= gh_h($tx_time) ?>" style="width:120px;" maxlength="8">
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2" class="line2"></td>
-		</tr>
-		<tr class="ht">
-			<td class="td1">현재총잔액</td>
-			<td class="td2">
-				<input type="text" name="total_balance" class="input_text bank-amount" value="<?= gh_h(bank_format_price($c($content, 'total_balance'))) ?>" style="width:300px;" inputmode="numeric" autocomplete="off"> 원
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2" class="line2"></td>
-		</tr>
-		<tr class="ht">
-			<td class="td1">조회기준시</td>
-			<td class="td2">
-				<input type="text" name="inquiry_datetime" class="input_text" value="<?= gh_h($c($content, 'inquiry_datetime')) ?>" style="width:400px;" maxlength="100">
+				<input type="datetime-local" name="transaction_datetime" class="input_text" value="<?= gh_h($tx_datetime_input) ?>" style="width:240px;" step="1" required="required">
 			</td>
 		</tr>
 		<tr>
