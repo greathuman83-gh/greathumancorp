@@ -45,6 +45,10 @@ if (isset($a_level)) {
 	$inputs['a_level'] = $a_level;
 }
 
+if ($admin_super && isset($a_status) && in_array($a_status, ['Y', 'N'], true)) {
+	$inputs['a_status'] = $a_status;
+}
+
 if ($a_pwd ??= null) {
 	$inputs['a_pwd'] = hash('sha256', $a_pwd);
 	// 비밀번호 변경 시 자동로그인 토큰 무효화
@@ -60,6 +64,7 @@ if ($w == 'a') {
 	$inputs['language'] = $_SESSION['language'];
 	$inputs['a_id'] = $a_id;
 	$inputs['regdate'] = date("Y-m-d H:i:s");
+	$inputs['a_status'] = $inputs['a_status'] ?? 'Y';
 
 	$where = "where a_id = :a_id";
 	$bind_param[] = array('a_id', $a_id, 'and');

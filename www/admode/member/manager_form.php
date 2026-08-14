@@ -43,6 +43,21 @@ if(!$admin_super && $admin_id != $d['a_id']){
 </tr>
 <tr><td colspan="2" class="line2"></td></tr>
 <?php }?>
+<?php if($admin_super){?>
+<tr class="ht">
+	<td class="td1"><?=$_pageText['상태']?></td>
+	<td class="td2">
+		<select name="a_status" class="input_select">
+			<option value="Y" <?php if(($d['a_status'] ?? 'Y') === 'Y'){?>selected<?php }?>><?=$_pageText['승인완료']?></option>
+			<option value="N" <?php if(($d['a_status'] ?? 'Y') === 'N'){?>selected<?php }?>><?=$_pageText['승인대기']?></option>
+		</select>
+		<?php if(($d['a_kakao_id'] ?? '') !== ''){?>
+			<span style="margin-left:10px;"><?=$_pageText['카카오 연동']?></span>
+		<?php }?>
+	</td>
+</tr>
+<tr><td colspan="2" class="line2"></td></tr>
+<?php }?>
 <tr class="ht">
 	<td class="td1"><?=$_pageText['아이디']?></td>
 	<td class="td2">

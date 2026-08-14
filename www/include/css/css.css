@@ -371,6 +371,19 @@ a:hover {
   font-weight: bold;
 }
 
+.login-box .login-box-in .kakao-login-button {
+  width: 456px;
+  height: 57px;
+  line-height: 57px;
+  border: 0;
+  padding: 0;
+  background: #fee500;
+  color: #191919;
+  margin-top: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .copyright {
   width: 722px;
   text-align: center;

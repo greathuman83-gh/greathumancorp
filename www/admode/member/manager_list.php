@@ -26,7 +26,8 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 	<col width="200" align="center"></col>
 	<col></col>
 	<col width="150" align="center"></col>
-	<col width="120" align="center"></col>
+	<col width="100" align="center"></col>
+	<col width="150" align="center"></col>
 	<col width="110" align="center"></col>
 	<tr><td colspan="12" class="line1"></td></tr>
 	<tr class="bgcol1 bold col1 ht center">
@@ -34,6 +35,7 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 		<td><?=$_pageText['타입']?></td>
 		<td><?=$_pageText['아이디']?></td>
 		<td><?=$_pageText['이름']?></td>
+		<td><?=$_pageText['상태']?></td>
 		<td><?=$_pageText['등록일']?></td>
 		<td><?php if($admin_super){?><button type="button" class="red_btn" onclick="window.location='./manager_form.php?<?=$func_library->queryString('w')?>w=a'"><?=$_pageText['등록']?></button><?php }?></td>
 	</tr>
@@ -55,6 +57,8 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 		$number = $list_result['number'];
 		foreach($list_result['result'] as $d){
 		$regdate= substr($d['regdate'],0,10);
+		$a_status = (string)($d['a_status'] ?? 'Y');
+		$a_status_text = $a_status === 'N' ? $_pageText['승인대기'] : $_pageText['승인완료'];
 	?>
 	<tr class="list col1 ht center">
 		<td><?=$number?></td>
@@ -63,6 +67,7 @@ include_once __DIR__ . '/' . $gh_path . 'include/html/admin_top.php';
 		</td>
 		<td><a href="./manager_form.php?<?=$func_library->queryString('idx,w')?>w=u&idx=<?=$d['idx']?>"><?=$d['a_id']?></a></td>
 		<td><?=$d['a_name']?></td>
+		<td><?=$a_status_text?></td>
 		<td><?=$regdate?></td>
 		<td>
 			<?php if($admin_super){?>

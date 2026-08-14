@@ -6,6 +6,9 @@ if (!empty($admin_id)) {
 	$func_library->gotoUrl('../member/manager_list.php?menu_code=001001');
 }
 
+// 카카오 로그인 CSRF — 콜백(kakao_login_ok.php)에서 대조
+$_SESSION['kakao_oauth_state'] = bin2hex(random_bytes(16));
+
 // 자동로그인 쿠키 — language|a_id|token 검증 후 세션 복구 (1년 쿠키)
 $auto_login_cookie = $_COOKIE['admin_auto_login'] ?? '';
 if ($auto_login_cookie !== '') {
@@ -24,6 +27,19 @@ if ($auto_login_cookie !== '') {
 				&& ($admin_data['a_auto_login_token'] ?? '') !== ''
 				&& hash_equals((string) $admin_data['a_auto_login_token'], $token_hash)
 			) {
+				// 미승인 계정 — 자동로그인도 세션 복구하지 않음
+				$is_super = (string) ($admin_data['super'] ?? '') === '1';
+				if (!$is_super && ($admin_data['a_status'] ?? 'Y') !== 'Y') {
+					setcookie('admin_auto_login', '', [
+						'expires' => time() - 3600,
+						'path' => '/',
+						'secure' => COOKIE_SECURE,
+						'httponly' => true,
+						'samesite' => 'Strict',
+					]);
+					$func_library->alert($_pageText['해당 계정은 승인 대기중입니다.'], 'login.php');
+				}
+
 				$_SESSION['admin_id'] = $admin_data['a_id'];
 				$_SESSION['admin_name'] = $admin_data['a_name'];
 				$_SESSION['admin_level'] = $admin_data['a_level'];
@@ -109,6 +125,7 @@ if ($auto_login_cookie !== '') {
 			.login-box .login-box-in .login-input,
 			.login-box .login-box-in .auto-login,
 			.login-box .login-box-in .submit-button,
+			.login-box .login-box-in .kakao-login-button,
 			.copyright {
 				width: 100%;
 				box-sizing: border-box;
@@ -152,8 +169,13 @@ if ($auto_login_cookie !== '') {
 						</label>
 					</div>
 					<button type="submit" class="submit-button"><?= $_pageText['로그인'] ?></button>
+					<button type="button" class="kakao-login-button" id="kakao-login-button"><?= $_pageText['카카오 로그인'] ?></button>
 				</div>
 			</div>
+		</form>
+		<form name="kakao_login" id="kakao-login-form" method="post" action="kakao_login_ok.php">
+			<input type="hidden" name="kakao_access_token" id="kakao-access-token" value="">
+			<input type="hidden" name="kakao_state" value="<?= gh_h($_SESSION['kakao_oauth_state']) ?>">
 		</form>
 
 		<div class="copyright">
@@ -161,6 +183,7 @@ if ($auto_login_cookie !== '') {
 		</div>
 
 	</div>
+	<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 	<script type="text/javascript">
 		// 로그인 검증 — 아이디·비밀번호 빈 값 차단
 		function login_sendit() {
@@ -179,6 +202,37 @@ if ($auto_login_cookie !== '') {
 				return false;
 			}
 		}
+
+		// 카카오 로그인 — JS SDK 팝업 후 access_token을 서버에서 재검증
+		function kakaoLogin() {
+			if (typeof Kakao === 'undefined') {
+				alert("<?= $_pageText['카카오 로그인에 실패했습니다.'] ?>");
+				return;
+			}
+			if (!Kakao.isInitialized()) {
+				Kakao.init('<?= gh_h(KAKAO_API_JS_KEY) ?>');
+			}
+			if (typeof Kakao.Auth.login !== 'function') {
+				alert("<?= $_pageText['카카오 로그인에 실패했습니다.'] ?>");
+				return;
+			}
+			Kakao.Auth.login({
+				success: function (authObj) {
+					var token = authObj && authObj.access_token ? authObj.access_token : '';
+					if (token === '') {
+						alert("<?= $_pageText['카카오 로그인에 실패했습니다.'] ?>");
+						return;
+					}
+					document.getElementById('kakao-access-token').value = token;
+					document.getElementById('kakao-login-form').submit();
+				},
+				fail: function () {
+					alert("<?= $_pageText['카카오 로그인에 실패했습니다.'] ?>");
+				}
+			});
+		}
+
+		document.getElementById('kakao-login-button').addEventListener('click', kakaoLogin);
 	</script>
 </body>
 

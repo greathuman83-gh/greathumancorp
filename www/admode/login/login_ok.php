@@ -16,6 +16,12 @@ $hash_pwd = hash('sha256',$a_pwd);
 if ($admin_data){
 	$data_pwd =$admin_data['a_pwd'];
 	if ($hash_pwd==$data_pwd) {
+		// 미승인 계정 — 슈퍼관리자만 상태와 무관하게 통과
+		$is_super = (string) ($admin_data['super'] ?? '') === '1';
+		if (!$is_super && ($admin_data['a_status'] ?? 'Y') !== 'Y') {
+			$func_library->alert($_pageText['해당 계정은 승인 대기중입니다.'],'login.php');
+		}
+
 		$_SESSION['admin_id'] = $admin_data['a_id'];
 		$_SESSION['admin_name'] = $admin_data['a_name'];
 		$_SESSION['admin_level'] = $admin_data['a_level'];
