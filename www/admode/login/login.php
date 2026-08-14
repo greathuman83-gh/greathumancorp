@@ -9,7 +9,7 @@ if (!empty($admin_id)) {
 // 카카오 로그인 CSRF — 콜백(kakao_login_ok.php)에서 대조
 $_SESSION['kakao_oauth_state'] = bin2hex(random_bytes(16));
 
-// 자동로그인 쿠키 — language|a_id|token 검증 후 세션 복구 (1년 쿠키)
+// 자동로그인 쿠키 — language|a_id|token 검증 후 세션 복구 (6개월 쿠키)
 $auto_login_cookie = $_COOKIE['admin_auto_login'] ?? '';
 if ($auto_login_cookie !== '') {
 	$auto_parts = explode('|', $auto_login_cookie, 3);
@@ -176,6 +176,7 @@ if ($auto_login_cookie !== '') {
 		<form name="kakao_login" id="kakao-login-form" method="post" action="kakao_login_ok.php">
 			<input type="hidden" name="kakao_access_token" id="kakao-access-token" value="">
 			<input type="hidden" name="kakao_state" value="<?= gh_h($_SESSION['kakao_oauth_state']) ?>">
+			<input type="hidden" name="auto_login" id="kakao-auto-login" value="">
 		</form>
 
 		<div class="copyright">
@@ -223,7 +224,9 @@ if ($auto_login_cookie !== '') {
 						alert("<?= $_pageText['카카오 로그인에 실패했습니다.'] ?>");
 						return;
 					}
+					var autoLoginEl = document.getElementById('auto_login');
 					document.getElementById('kakao-access-token').value = token;
+					document.getElementById('kakao-auto-login').value = (autoLoginEl && autoLoginEl.checked) ? 'Y' : '';
 					document.getElementById('kakao-login-form').submit();
 				},
 				fail: function () {

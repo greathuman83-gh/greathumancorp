@@ -29,7 +29,7 @@ if ($admin_data){
 		$_SESSION['admin_auth'] = $admin_data['a_authority'];
 		$_SESSION['language'] = LANGUAGE;
 
-		// 자동로그인 — 체크 시 1년 쿠키·DB 토큰 저장, 미체크 시 기존 쿠키만 유지
+		// 자동로그인 — 체크 시 6개월 쿠키·DB 토큰 저장, 미체크 시 기존 쿠키만 유지
 		if (isset($auto_login) && $auto_login === 'Y') {
 			$auto_token = bin2hex(random_bytes(32));
 			$inputs = [];
@@ -39,7 +39,7 @@ if ($admin_data){
 			$DB->updateSet('gh_admin', $inputs, $where);
 
 			setcookie('admin_auto_login', LANGUAGE . '|' . $admin_data['a_id'] . '|' . $auto_token, [
-				'expires' => time() + (365 * 24 * 60 * 60),
+				'expires' => time() + (180 * 24 * 60 * 60),
 				'path' => '/',
 				'secure' => COOKIE_SECURE,
 				'httponly' => true,
