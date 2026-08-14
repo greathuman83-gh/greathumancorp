@@ -255,6 +255,10 @@ define('EXIMBAY_KEY_KR', ''); //엑심베이 KEY 국문
 //============== 전자공시 OpenDart API ===========================
 define('DART_KEY', ''); //API KEY
 
+//============== 카카오 API ===========================
+define('KAKAO_API_ADMIN_KEY', 'f0ff7905d2c7d8fffa95410012303c7e'); //API ADMINKEY
+define('KAKAO_API_JS_KEY', '3d1a84bbf6cfbd19b81cb8017d5e0a2d'); //API JavaScript KEY
+
 //============== 구글 SMTP 정보 ==============
 $google_client_id = '';
 $google_client_secret = '';

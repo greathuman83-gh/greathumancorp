@@ -1,0 +1,108 @@
+# 디렉터리 리스팅 비활성화
+Options -Indexes
+
+# 로드밸런서/프록시 뒤 HTTPS 판별(HSTS 발급용)
+<IfModule mod_setenvif.c>
+  SetEnvIf X-Forwarded-Proto "^https$" HTTPS=on
+</IfModule>
+
+# PHP 모듈(mod_php) 사용 시에만 적용 (PHP-FPM 전용 호스트에서는 무시될 수 있음)
+<IfModule mod_php.c>
+  php_flag expose_php Off
+  php_value default_charset "UTF-8"
+</IfModule>
+# PHP 8.x mod_php 패키지별 모듈명 대비
+<IfModule mod_php8.c>
+  php_flag expose_php Off
+  php_value default_charset "UTF-8"
+</IfModule>
+# 구버전 호환 (mod_php7)
+<IfModule mod_php7.c>
+  php_flag expose_php Off
+  php_value default_charset "UTF-8"
+</IfModule>
+
+# 민감 파일 직접 접근 차단 (백업·설정·쉘·키·PHAR 등)
+<IfModule mod_authz_core.c>
+  <FilesMatch "(?i)\.(sql|bak|old|log|ini|env|sh|phps|swp|dist|phar|neon|yaml|yml|pem|key|crt|ps1|sqlite3?)$">
+    Require all denied
+  </FilesMatch>
+  <FilesMatch "(?i)^\.ht">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "(?i)\.(sql|bak|old|log|ini|env|sh|phps|swp|dist|phar|neon|yaml|yml|pem|key|crt|ps1|sqlite3?)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+  <FilesMatch "(?i)^\.ht">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
+
+# HTTP 보안 헤더
+<IfModule mod_headers.c>
+  # HTTPS에서만 HSTS (HTTP 전용 사이트에서 잘못 발급 방지)
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+  Header always unset X-Powered-By
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Permitted-Cross-Domain-Policies "none"
+  # Permissions-Policy: 사이트에서 카메라/마이크 등이 필요하면 여기서 () 부분을 조정
+  Header always set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), encrypted-media=(), fullscreen=(self), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+  # CSP는 인라인 스크립트·에디터(스마트에디터) 때문에 호스트마다 조정 필요 — 적용 전 주석 해제 후 검증
+  Header always set Content-Security-Policy "default-src 'self' https:; base-uri 'self'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https: data:; frame-ancestors 'self';"
+
+  # SSL 페이지(PHP/HTML) 캐싱 금지 — 민감 데이터·세션 응답
+  # no-store: 브라우저·프록시 모두 저장 금지 / Pragma: HTTP/1.0 구형 클라이언트 대비
+  <FilesMatch "\.(?i:php|html|htm)$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0" env=HTTPS
+    Header always set Pragma "no-cache" env=HTTPS
+    Header always set Expires "0" env=HTTPS
+  </FilesMatch>
+</IfModule>
+
+# URL·경로 기반 차단 (소스 구조: include/common·html·language는 웹 진입점 아님)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 공용 PHP·설정·DB 클래스 등 직접 URL 호출 차단 (include만 허용)
+  RewriteRule ^include/common/ - [F,L]
+  RewriteRule ^include/html/ - [F,L]
+  RewriteRule ^include/language/ - [F,L]
+
+  # PHPMailer OAuth 유틸 — 운영 사이트에서 직접 노출 금지
+  RewriteRule ^include/plugin/get_oauth_token\.php$ - [F,L]
+
+  # Snoopy 등 라이브러리 디렉터리 (HTTP 진입점 없음)
+  RewriteRule ^include/plugin/snoopy/ - [F,L]
+
+  # 스마트에디터: 업로드는 popup/php/index.php(+nonce)만 사용. 조각 PHP 직접 호출 차단
+  RewriteRule ^include/plugin/editor/smarteditor2/editor\.lib\.php$ - [F,L]
+  RewriteRule ^include/plugin/editor/smarteditor2/photo_uploader/popup/_common\.php$ - [F,L]
+  RewriteRule ^include/plugin/editor/smarteditor2/photo_uploader/popup/php/_common\.php$ - [F,L]
+  RewriteRule ^include/plugin/editor/smarteditor2/photo_uploader/popup/php/UploadHandler\.php$ - [F,L]
+  RewriteRule ^include/plugin/editor/smarteditor2/photo_uploader/popup/php/JSON\.php$ - [F,L]
+
+  # 저장소·의존성 디렉터리
+  RewriteRule (^|/)\.git(/|$) - [F,L]
+  RewriteRule (^|/)composer\.(json|lock)$ - [F,L]
+  RewriteRule (^|/)package(-lock)?\.json$ - [F,L]
+  # DocumentRoot가 www일 때: /include/plugin/vendor
+  # 상위 폴더가 문서 루트일 때: /www/include/plugin/vendor 등도 동일 패턴으로 차단
+  RewriteCond %{REQUEST_URI} (^|/)include/plugin/vendor(/|$) [NC]
+  RewriteRule .* - [F,L]
+
+  # 쿼리스트링 기반 일부 공격 패턴 차단
+  RewriteCond %{QUERY_STRING} (\|%3E) [NC,OR]
+  RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+  RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2}) [OR]
+  RewriteCond %{QUERY_STRING} (?:^|[?&])auto_prepend_file\s*= [NC,OR]
+  RewriteCond %{QUERY_STRING} (?:^|[?&])allow_url_include\s*= [NC,OR]
+  RewriteCond %{QUERY_STRING} (?:^|[?&])disable_functions\s*=
+  RewriteRule .* - [F,L]
+</IfModule>
+

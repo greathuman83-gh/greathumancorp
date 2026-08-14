@@ -39,13 +39,11 @@ header('Pragma: no-cache');
 
 
 //https로 리다이렉트
-/*
-if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' || $_SERVER['SERVER_PORT'] == 80){
+if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' || $_SERVER['SERVER_PORT'] == 80) {
 	$https_url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	header('Location: ' . $https_url, true, 301);
 	exit();
 }
-*/
 
 
 
