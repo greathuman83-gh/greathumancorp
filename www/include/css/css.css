@@ -623,6 +623,7 @@ select.input-select:has(option.pay-stat-opt.pay-stat-4:checked) {
 button {
   cursor: pointer;
   vertical-align: middle;
+  border-radius: 4px;
 }
 .search-btn,
 .search_btn {

@@ -3,8 +3,17 @@ error_reporting(E_ALL);
 //error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 1);
 
-//보안서버 체크
-if (isset($_SERVER['HTTPS'])) {
+// 로컬 접속 — localhost·루프백·사설 IP는 HTTPS 강제·secure 쿠키 생략 (php -S 등)
+$gh_http_host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? ''));
+$gh_http_host = (string) preg_replace('/:\d+$/', '', $gh_http_host);
+$gh_http_host = trim($gh_http_host, '[]');
+$gh_is_local = ($gh_http_host === 'localhost');
+if (!$gh_is_local && $gh_http_host !== '' && filter_var($gh_http_host, FILTER_VALIDATE_IP)) {
+	$gh_is_local = filter_var($gh_http_host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+}
+
+//보안서버 체크 — 로컬은 HTTP로 고정
+if (!$gh_is_local && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 	define('HTTP_PROTOCOL', 'https');
 	define('COOKIE_SECURE', true);
 } else {
@@ -38,8 +47,8 @@ header('Pragma: no-cache');
 
 
 
-//https로 리다이렉트
-if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' || $_SERVER['SERVER_PORT'] == 80) {
+//https로 리다이렉트 — 로컬은 HTTP 유지
+if (!$gh_is_local && (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 80)) {
 	$https_url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	header('Location: ' . $https_url, true, 301);
 	exit();
