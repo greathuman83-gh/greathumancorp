@@ -72,7 +72,11 @@ if(!$admin_super && $admin_id != $d['a_id']){
 <tr class="ht">
 	<td class="td1"><?=$_pageText['이름']?></td>
 	<td class="td2">
-		<input type="text" id="a_name" name="a_name" value="<?=$d['a_name']?>" style="width:200px;" class="input_text">
+		<?php if($admin_super){?>
+			<input type="text" id="a_name" name="a_name" value="<?=$d['a_name']?>" style="width:200px;" class="input_text">
+		<?php }else{?>
+			<?=$d['a_name']?>
+		<?php }?>
 	</td>
 </tr>
 <tr><td colspan="2" class="line2"></td></tr>
@@ -260,7 +264,7 @@ function fwrite_submit(f){
 		return false;
 	}
 
-	if (aNameEl.value == '') {
+	if (aNameEl && aNameEl.value == '') {
 		alert("<?=$_pageText['이름을 입력해 주세요.']?>");
 		aNameEl.focus();
 		return false;

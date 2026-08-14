@@ -32,7 +32,9 @@ if ($admin_super && isset($a_authority)) { //메인관리자만 페이지 접근
 	$inputs['a_authority'] = $a_authority_array;
 }
 
-$inputs['a_name'] = $a_name ?? null;
+if ($admin_super) {
+	$inputs['a_name'] = $a_name ?? null;
+}
 $inputs['a_tel'] = $a_tel ?? null;
 $inputs['a_hp'] = $a_hp ?? null;
 $inputs['a_email'] = $a_email ?? null;
