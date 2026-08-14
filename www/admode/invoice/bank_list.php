@@ -50,6 +50,7 @@ if ($summary_balance === '') {
 
 <table width="100%" class="adminMenuTable">
 	<tr>
+		<?php if ($admin_super) { ?>
 		<td align="left">
 			<form name="fexcel" method="post" action="./bank_ok.php?<?= $func_library->queryString('w') ?>w=eu" enctype="multipart/form-data" style="margin:0;display:inline-block;">
 				<input type="hidden" name="menu_code" value="<?= gh_h((string)($menu_code ?? '')) ?>">
@@ -57,7 +58,8 @@ if ($summary_balance === '') {
 				<button type="submit" class="black_btn">거래내역 업로드</button>
 			</form>
 		</td>
-		<td align="right">
+		<?php } ?>
+		<td align="right"<?php if (!$admin_super) { ?> colspan="2"<?php } ?>>
 			<form name="fsearch" method="get" style="margin:0;display:inline-block;">
 				<input type="hidden" name="menu_code" value="<?= gh_h((string)($menu_code ?? '')) ?>">
 				<input type="date" name="start_date" class="input_text" value="<?= gh_h($start_date) ?>" style="width:140px;"> ~
@@ -195,13 +197,15 @@ if ($summary_balance === '') {
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
-			<td class="td2"><a href="./bank_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($counterparty) ?></a></td>
+			<td class="td2"><?php if ($admin_super) { ?><a href="./bank_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($counterparty) ?></a><?php } else { ?><?= gh_h($counterparty) ?><?php } ?></td>
 			<td><?= $amount_html ?></td>
 			<td><?= gh_h($branch) ?></td>
 			<td><?= gh_h($tx_date) ?></td>
 			<td>
+				<?php if ($admin_super) { ?>
 				<button type="button" class="black_icon_btn" onclick="window.location='./bank_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
 				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./bank_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
+				<?php } ?>
 			</td>
 		</tr>
 		<tr>

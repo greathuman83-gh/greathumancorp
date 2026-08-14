@@ -67,6 +67,11 @@ function invoice_format_price(string $value): string
 $c = static function (array $content, string $key): string {
 	return (string)($content[$key] ?? '');
 };
+
+// 수정 화면 — 슈퍼관리자만 (일반 관리자는 등록·조회만)
+if (($w ?? '') == 'u' && !$admin_super) {
+	$func_library->alert($_pageText['수정하실 권한이 없습니다.']);
+}
 ?>
 <form name="fwrite" method="post" action="./invoice_ok.php?<?= $func_library->queryString() ?>" onsubmit="return fwrite_submit(this);" style="margin:0px;">
 	<table align="center" cellpadding="0" cellspacing="0" class="adminMenuTable">

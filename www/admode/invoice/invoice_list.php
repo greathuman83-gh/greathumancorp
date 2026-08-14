@@ -41,6 +41,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 
 <table width="100%" class="adminMenuTable">
 	<tr>
+		<?php if ($admin_super) { ?>
 		<td align="left">
 			<form name="fexcel" method="post" action="./invoice_ok.php?<?= $func_library->queryString('w') ?>w=eu" enctype="multipart/form-data" style="margin:0;display:inline-block;">
 				<input type="hidden" name="menu_code" value="<?= gh_h((string)($menu_code ?? '')) ?>">
@@ -49,7 +50,8 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 				<button type="submit" class="black_btn"><?= gh_h($excel_label) ?></button>
 			</form>
 		</td>
-		<td align="right">
+		<?php } ?>
+		<td align="right"<?php if (!$admin_super) { ?> colspan="2"<?php } ?>>
 			<form name="fsearch" method="get" style="margin:0;display:inline-block;">
 				<input type="hidden" name="menu_code" value="<?= gh_h((string)($menu_code ?? '')) ?>">
 				<input type="hidden" name="page_type" value="<?= gh_h($page_type) ?>">
@@ -201,7 +203,7 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 	?>
 		<tr class="list col1 ht center">
 			<td><?= $number ?></td>
-			<td class="td2"><a href="./invoice_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($item_name) ?></a></td>
+			<td class="td2"><?php if ($admin_super) { ?><a href="./invoice_form.php?<?= $func_library->queryString('pg,idx,w') ?>w=u&idx=<?= (int)$d['idx'] ?>"><?= gh_h($item_name) ?></a><?php } else { ?><?= gh_h($item_name) ?><?php } ?></td>
 			<td><?= gh_h($company) ?></td>
 			<td><?= gh_h($supply_text) ?></td>
 			<td><?= $total_html ?></td>
@@ -209,8 +211,10 @@ $bank_menu_code = is_array($bank_menu_row) ? (string)($bank_menu_row['m_code'] ?
 			<td><?= gh_h($write_date) ?></td>
 			<td><?= gh_h($issue_date) ?></td>
 			<td>
+				<?php if ($admin_super) { ?>
 				<button type="button" class="black_icon_btn" onclick="window.location='./invoice_form.php?<?= $func_library->queryString() ?>w=u&idx=<?= (int)$d['idx'] ?>'">수정</button>
 				<button type="button" class="gray_icon_btn" onclick="if(confirm('정말 삭제하시겠습니까?'))location.href='./invoice_ok.php?<?= $func_library->queryString() ?>w=d&idx=<?= (int)$d['idx'] ?>';">삭제</button>
+				<?php } ?>
 			</td>
 		</tr>
 		<tr>

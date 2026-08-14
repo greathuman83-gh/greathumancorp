@@ -35,6 +35,11 @@ $c = static function (array $content, string $key): string {
 	return (string)($content[$key] ?? '');
 };
 
+// 수정 화면 — 슈퍼관리자만 (일반 관리자는 등록·조회만)
+if (($w ?? '') == 'u' && !$admin_super) {
+	$func_library->alert($_pageText['수정하실 권한이 없습니다.']);
+}
+
 $tx_datetime = $c($content, 'transaction_datetime');
 $tx_date = $tx_datetime !== '' ? substr($tx_datetime, 0, 10) : '';
 $tx_time = '';

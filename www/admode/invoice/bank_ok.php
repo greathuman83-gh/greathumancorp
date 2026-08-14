@@ -277,6 +277,9 @@ function bank_sync_invoice_payment(PDO $conn, DBManager $DB, string $invoice_tab
 }
 
 if (($w ?? '') == 'eu') {
+	if (!$admin_super) {
+		$func_library->alert($_pageText['등록하실 권한이 없습니다.']);
+	}
 	// 엑셀 업로드 — KB 거래내역조회, 목록·총잔액·조회기준시만 저장
 	$file = $_FILES['excel_file'] ?? null;
 	if (!is_array($file) || (int)($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
@@ -478,6 +481,9 @@ if (($w ?? '') == 'eu') {
 
 // 등록·수정 — 개별 입력값을 b_content JSON으로 저장
 if (($w ?? '') == 'a' || ($w ?? '') == 'u') {
+	if (($w ?? '') == 'u' && !$admin_super) {
+		$func_library->alert($_pageText['수정하실 권한이 없습니다.']);
+	}
 	$category = (string)($category ?? '1');
 	if ($category !== '1' && $category !== '2') {
 		$category = '1';
@@ -543,6 +549,9 @@ if (($w ?? '') == 'a' || ($w ?? '') == 'u') {
 }
 
 if (($w ?? '') == 'd') {
+	if (!$admin_super) {
+		$func_library->alert($_pageText['삭제하실 권한이 없습니다.']);
+	}
 	$idx = (int)($idx ?? 0);
 	$where = [];
 	$where[] = ['idx', $idx];
