@@ -547,7 +547,24 @@ document.addEventListener("DOMContentLoaded", function () {
     var hasActiveCard = false;
 
     listTables.forEach(function (table) {
-      var headerRow = table.querySelector("tr.bgcol1, tr.bold.col1");
+      // 컬럼 헤더 — colspan 요약행(현재총잔액 등)은 건너뛰고 실제 헤더행 사용
+      var headerRow = null;
+      table.querySelectorAll("tr.bgcol1, tr.bold.col1").forEach(function (row) {
+        if (headerRow) {
+          return;
+        }
+        var headerCells = Array.prototype.filter.call(row.children, function (c) {
+          return c.tagName === "TD" || c.tagName === "TH";
+        });
+        var isSummaryOnly =
+          headerCells.length === 1 && headerCells[0].hasAttribute("colspan");
+        if (!isSummaryOnly) {
+          headerRow = row;
+        }
+      });
+      if (!headerRow) {
+        headerRow = table.querySelector("tr.bgcol1, tr.bold.col1");
+      }
       var actionBox = null;
       var prev = table.previousElementSibling;
       while (prev) {

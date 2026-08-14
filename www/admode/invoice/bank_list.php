@@ -78,6 +78,12 @@ if ($summary_balance === '') {
 	</tr>
 </table>
 
+<?php // 현재총잔액 — 목록 테이블 밖 배치 (모바일 카드 변환 시 헤더 라벨 오인·반복 방지) ?>
+<div class="bank-list-summary">
+	<span class="bank-list-summary__balance">현재총잔액 <?= gh_h($summary_balance) ?> 원</span>
+	<span class="bank-list-summary__inquiry">(조회기준시 : <?= gh_h($summary_inquiry) ?>)</span>
+</div>
+
 <table cellpadding="0" cellspacing="0" class="adminMenuTable">
 	<col width="70" align="center">
 	</col>
@@ -93,14 +99,6 @@ if ($summary_balance === '') {
 	</col>
 	<tr>
 		<td colspan="6" class="line1"></td>
-	</tr>
-	<tr class="bgcol1 bold col1 ht center">
-		<td colspan="6" style="text-align:center;padding:12px 0;">
-			현재총잔액 <?= gh_h($summary_balance) ?> 원 (조회기준시 : <?= gh_h($summary_inquiry) ?>)
-		</td>
-	</tr>
-	<tr>
-		<td colspan="6" class="line2"></td>
 	</tr>
 	<tr class="bgcol1 bold col1 ht center">
 		<td>번호</td>
