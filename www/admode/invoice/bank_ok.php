@@ -18,6 +18,9 @@ function bank_cell_str(mixed $val): string
 	if ($val === null) {
 		return '';
 	}
+	if ($val instanceof DateTimeInterface) {
+		return $val->format('Y-m-d H:i:s');
+	}
 	if (is_float($val) || is_int($val)) {
 		if ((float)$val == (int)$val) {
 			return (string)(int)$val;
@@ -41,7 +44,7 @@ function bank_normalize_amount(string $value): string
 }
 
 /**
- * 거래일시 정규화 — YYYY-MM-DD HH:MM:SS
+ * 거래일시 정규화 — YYYY-MM-DD HH:MM:SS (엑셀 시리얼·한 자리 월/일·T구분 포함)
  */
 function bank_normalize_datetime(string $value): string
 {
@@ -49,12 +52,23 @@ function bank_normalize_datetime(string $value): string
 	if ($value === '') {
 		return '';
 	}
-	// 2026.07.31 14:25:00 / 2026-07-31 14:25:00
-	$value = str_replace(['.', 'T'], ['-', ' '], $value);
+
+	// Excel 날짜 시리얼 — 업로드 시 PhpSpreadsheet가 로드된 경우에만 변환
+	if (is_numeric($value) && (float)$value >= 20000 && (float)$value <= 90000
+		&& class_exists(\PhpOffice\PhpSpreadsheet\Shared\Date::class)
+	) {
+		try {
+			return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$value)->format('Y-m-d H:i:s');
+		} catch (Throwable $e) {
+			// 문자열 파싱으로 진행
+		}
+	}
+
+	$value = str_replace('T', ' ', $value);
 	$value = preg_replace('/\s+/', ' ', $value) ?? $value;
-	if (preg_match('/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/', $value, $m)) {
-		$date = $m[1];
-		$time = isset($m[2]) && $m[2] !== '' ? $m[2] : '00:00:00';
+	if (preg_match('/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?/', $value, $m)) {
+		$date = sprintf('%04d-%02d-%02d', (int)$m[1], (int)$m[2], (int)$m[3]);
+		$time = isset($m[4]) && $m[4] !== '' ? $m[4] : '00:00:00';
 		$parts = explode(':', $time);
 		$h = str_pad((string)(int)($parts[0] ?? 0), 2, '0', STR_PAD_LEFT);
 		$i = str_pad((string)(int)($parts[1] ?? 0), 2, '0', STR_PAD_LEFT);
@@ -69,6 +83,15 @@ function bank_normalize_datetime(string $value): string
 }
 
 /**
+ * 보낸분/받는분 정규화 — 엑셀 NBSP·연속공백 제거 후 비교
+ */
+function bank_normalize_counterparty(string $name): string
+{
+	$name = preg_replace('/[\s\x{00A0}\x{3000}]+/u', ' ', $name) ?? $name;
+	return trim($name);
+}
+
+/**
  * b_content 정규화 — 리스트·총잔액·조회기준시만 저장
  * @param array<string, mixed> $raw
  * @return array<string, string>
@@ -80,13 +103,61 @@ function bank_normalize_content(array $raw): array
 	$tx_datetime = bank_normalize_datetime((string)($raw['transaction_datetime'] ?? ''));
 
 	return [
-		'counterparty' => trim((string)($raw['counterparty'] ?? '')),
+		'counterparty' => bank_normalize_counterparty((string)($raw['counterparty'] ?? '')),
 		'amount' => $amount,
 		'branch' => trim((string)($raw['branch'] ?? '')),
 		'transaction_datetime' => $tx_datetime,
 		'total_balance' => $total_balance,
 		'inquiry_datetime' => trim((string)($raw['inquiry_datetime'] ?? '')),
 	];
+}
+
+/**
+ * 중복 판정 키 — 거래일시+보낸분/받는분+거래금액 (양쪽 동일 정규화)
+ */
+function bank_duplicate_key(string $transaction_datetime, string $counterparty, string $amount): string
+{
+	$tx = bank_normalize_datetime($transaction_datetime);
+	$party = bank_normalize_counterparty($counterparty);
+	$amt = bank_normalize_amount($amount);
+	if ($tx === '' || $party === '' || $amt === '') {
+		return '';
+	}
+	return $tx . "\0" . $party . "\0" . $amt;
+}
+
+/**
+ * 기존 거래내역 중복 키 집합 — JSON 원문 차이를 PHP 정규화로 흡수
+ * @return array<string, true>
+ */
+function bank_existing_duplicate_keys(PDO $conn, string $table_name, int $exclude_idx = 0): array
+{
+	$sql = 'SELECT idx, b_content FROM `' . $table_name . '`';
+	if ($exclude_idx > 0) {
+		$sql .= ' WHERE idx <> :exclude_idx';
+	}
+	$stmt = $conn->prepare($sql);
+	if ($exclude_idx > 0) {
+		$stmt->bindValue(':exclude_idx', $exclude_idx, PDO::PARAM_INT);
+	}
+	$stmt->execute();
+
+	$keys = [];
+	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+		$content = json_decode((string)($row['b_content'] ?? ''), true);
+		if (!is_array($content)) {
+			continue;
+		}
+		$key = bank_duplicate_key(
+			(string)($content['transaction_datetime'] ?? ''),
+			(string)($content['counterparty'] ?? ''),
+			(string)($content['amount'] ?? '')
+		);
+		if ($key !== '') {
+			$keys[$key] = true;
+		}
+	}
+	return $keys;
 }
 
 /**
@@ -100,29 +171,12 @@ function bank_is_duplicate(
 	string $amount,
 	int $exclude_idx = 0
 ): bool {
-	if ($transaction_datetime === '' || $counterparty === '' || $amount === '') {
+	$key = bank_duplicate_key($transaction_datetime, $counterparty, $amount);
+	if ($key === '') {
 		return false;
 	}
-
-	$sql = 'SELECT idx FROM `' . $table_name . '` WHERE'
-		. ' JSON_UNQUOTE(JSON_EXTRACT(b_content, \'$.transaction_datetime\')) = :tx_datetime'
-		. ' AND JSON_UNQUOTE(JSON_EXTRACT(b_content, \'$.counterparty\')) = :counterparty'
-		. ' AND JSON_UNQUOTE(JSON_EXTRACT(b_content, \'$.amount\')) = :amount';
-	if ($exclude_idx > 0) {
-		$sql .= ' AND idx <> :exclude_idx';
-	}
-	$sql .= ' LIMIT 1';
-
-	$stmt = $conn->prepare($sql);
-	$stmt->bindValue(':tx_datetime', $transaction_datetime);
-	$stmt->bindValue(':counterparty', $counterparty);
-	$stmt->bindValue(':amount', $amount);
-	if ($exclude_idx > 0) {
-		$stmt->bindValue(':exclude_idx', $exclude_idx, PDO::PARAM_INT);
-	}
-	$stmt->execute();
-
-	return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+	$keys = bank_existing_duplicate_keys($conn, $table_name, $exclude_idx);
+	return isset($keys[$key]);
 }
 
 /**
@@ -153,6 +207,8 @@ function bank_company_name_aliases(): array
 		// 거래내역 세무사김희선·김희선(가온택스) ↔ 계산서 가온택스
 		'세무사김희선' => ['가온택스'],
 		'김희선(가온택스)' => ['가온택스'],
+		// 거래내역 최용석(지에이치소프(상호 잘림) ↔ 계산서 지에이치소프트
+		'최용석(지에이치소프' => ['지에이치소프트'],
 	];
 }
 
@@ -389,7 +445,8 @@ if (($w ?? '') == 'eu') {
 	$invoice_sync_count = 0;
 	$now = date('Y-m-d H:i:s');
 	$data_rows = array_slice($rows, $header_idx + 1);
-	$seen_keys = [];
+	// 기존 DB + 동일 파일 내 중복 — 거래일시·상대방·금액 정규화 키
+	$seen_keys = bank_existing_duplicate_keys($conn, $table_name);
 
 	foreach ($data_rows as $row) {
 		$tx_raw = bank_cell_str($row[$col_map['transaction_datetime']] ?? '');
@@ -398,8 +455,10 @@ if (($w ?? '') == 'eu') {
 		$deposit = bank_normalize_amount(bank_cell_str($row[$col_map['deposit']] ?? ''));
 		$branch = isset($col_map['branch']) ? bank_cell_str($row[$col_map['branch']] ?? '') : '';
 
-		// 페이지 표시·빈 행 스킵
-		if ($tx_raw === '' || !preg_match('/^\d{4}/', str_replace('.', '-', $tx_raw))) {
+		// 페이지 표시·빈 행 스킵 (엑셀 날짜 시리얼은 숫자 범위로 허용)
+		$tx_looks_date = preg_match('/^\d{4}/', str_replace(['.', '/'], '-', $tx_raw)) === 1;
+		$tx_looks_serial = is_numeric($tx_raw) && (float)$tx_raw >= 20000 && (float)$tx_raw <= 90000;
+		if ($tx_raw === '' || (!$tx_looks_date && !$tx_looks_serial)) {
 			continue;
 		}
 		if ($party === '' && $withdraw === '' && $deposit === '') {
@@ -432,13 +491,15 @@ if (($w ?? '') == 'eu') {
 			continue;
 		}
 
-		$dup_key = $content['transaction_datetime'] . "\0" . $content['counterparty'] . "\0" . $content['amount'];
-		if (
-			isset($seen_keys[$dup_key])
-			|| bank_is_duplicate($conn, $table_name, $content['transaction_datetime'], $content['counterparty'], $content['amount'])
-		) {
-			$skip_count++;
-			$seen_keys[$dup_key] = true;
+		$dup_key = bank_duplicate_key(
+			$content['transaction_datetime'],
+			$content['counterparty'],
+			$content['amount']
+		);
+		if ($dup_key === '' || isset($seen_keys[$dup_key])) {
+			if ($dup_key !== '') {
+				$skip_count++;
+			}
 			continue;
 		}
 		$seen_keys[$dup_key] = true;
