@@ -123,7 +123,9 @@ function bank_duplicate_key(string $transaction_datetime, string $counterparty, 
 	if ($tx === '' || $party === '' || $amt === '') {
 		return '';
 	}
-	return $tx . "\0" . $party . "\0" . $amt;
+	// 엑셀 재업로드 시 초가 00으로 잘리는 경우 대비 — 분 단위까지 동일하면 중복
+	$tx_minute = substr($tx, 0, 16);
+	return $tx_minute . "\0" . $party . "\0" . $amt;
 }
 
 /**
